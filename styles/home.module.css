@@ -1,0 +1,511 @@
+.fontHelvetica {
+  font-family: "Avenir Next", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.ul {
+  padding: 0;
+  margin: 0;
+}
+
+.header {
+  background-color: #001529;
+  height: 4rem;
+  width: 100%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.logo {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.menu {
+  font-size: 1.2rem;
+}
+
+.chatInterface {
+  width: 98%;
+  border-color: #757575;
+  border-width: 0.2rem;
+  border-style: solid;
+  padding: 0.8rem 0rem;
+  border-radius: 0.5rem 0.5rem 0.5rem 0.5rem;
+}
+
+.switch {
+  padding: 0rem 0rem 1rem 0rem;
+}
+
+.blueText {
+  font-size: 1rem;
+  color: #2196f3;
+}
+.responseText {
+  font-size: 0.9rem;
+  color: black;
+}
+.docText {
+  color: black;
+  display: flex;
+  flex-direction: column;
+  /* flex-wrap: wrap; */
+  justify-content: space-between;
+  padding: 0 0.5rem 0 0;
+  margin: 0 0;
+}
+.docItem {
+  font-size: 0.7rem;
+  color: #adadad;
+}
+
+.rightAlignButton {
+  text-align: right;
+}
+
+.inPut {
+  width: 45rem;
+}
+
+@media only screen and (max-width: 768px) {
+  .total {
+    display: flex;
+    flex-direction: column;
+    width: 50rem;
+  }
+  .menu {
+    font-size: 2rem;
+  }
+  .blueText {
+    color: #2196f3;
+    font-size: 1.5rem;
+  }
+  .blackText {
+    color: black;
+    font-size: 1.5rem;
+  }
+  .inPut {
+    width: 42rem;
+    font-size: 1.3rem;
+  }
+}
+
+.layout {
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.logo {
+  color: white;
+  font-size: 20px;
+  margin-right: 24px;
+}
+
+.content {
+  padding: 24px;
+  background: #f0f2f5;
+}
+
+.toolbar {
+  background: white;
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.designer {
+  display: flex;
+  background: white;
+  border-radius: 4px;
+  min-height: 800px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+}
+
+.reportArea {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  padding: 48px 48px 48px 48px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.logoImg {
+  object-fit: contain;
+  margin: 0 24px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.reportTitle {
+  font-size: 2.2rem;
+  font-weight: 700;
+  text-align: center;
+  flex: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.reportTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+  background: #fafbfc;
+}
+.reportTable th, .reportTable td {
+  border: 1px solid #e0e0e0;
+  padding: 12px 16px;
+  text-align: left;
+}
+.reportTable th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+/* 照片展示页面样式 */
+.main {
+  min-height: 100vh;
+  background: #f0f2f5;
+  padding: 24px 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.photoCard {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.photoCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.photoImage {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.photoInfo {
+  padding: 16px;
+}
+
+.photoTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.photoPrice {
+  font-size: 16px;
+  color: #1890ff;
+  font-weight: 600;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .header {
+    padding: 0 16px;
+    height: 3.5rem;
+  }
+  
+  .logo {
+    font-size: 16px;
+  }
+  
+  .headerActions {
+    gap: 8px;
+  }
+  
+  .content {
+    padding: 16px;
+  }
+  
+  .container {
+    padding: 0 12px;
+  }
+  
+  .photoGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .photoImage {
+    height: 180px;
+  }
+  
+  .photoCard {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 0 12px;
+    height: 3rem;
+  }
+  
+  .logo {
+    font-size: 14px;
+  }
+  
+  .content {
+    padding: 12px;
+  }
+  
+  .container {
+    padding: 0 8px;
+  }
+  
+  .photoImage {
+    height: 150px;
+  }
+}
+
+.pageTitle {
+  font-size: 32px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 照片区域容器样式 */
+.photoSectionContainer {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* 照片区域标识样式 */
+.photoSectionHeader {
+  display: none;
+}
+
+/* 照片卡片样式 */
+.photoCard {
+  transition: all 0.3s ease;
+}
+
+.photoCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+}
+
+
+/* 移动端分界线样式 */
+.mobileDivider {
+  display: none;
+}
+
+/* 移动端响应式设计 */
+@media (max-width: 768px) {
+  .mobileDivider {
+    display: block !important;
+  }
+  
+  .photoSectionHeader {
+    display: block !important;
+  }
+  
+  .photoSectionContainer {
+    border: 2px solid #e6f7ff !important;
+    background: linear-gradient(135deg, #fafafa, #f0f0f0) !important;
+    padding: 16px !important;
+    border-radius: 16px !important;
+    margin-bottom: 24px !important;
+  }
+  
+  .photoCard {
+    margin-bottom: 32px !important;
+  }
+  
+  .photoCard:hover {
+    transform: none;
+  }
+  
+  .pageTitle {
+    font-size: 24px;
+    margin-bottom: 24px;
+  }
+  
+  .cardGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+}
+
+/* 照片详情页响应式布局 */
+.photoDetailContainer {
+  display: flex;
+  gap: 24px;
+  min-height: 60vh;
+  flex-direction: row;
+}
+
+.photoImageContainer {
+  position: relative;
+  height: 400px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.photoInfoContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 400px;
+}
+
+.sizeSelectionContainer {
+  margin-bottom: 20px;
+}
+
+.sizeCard {
+  text-align: center;
+  cursor: pointer;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.priceDisplay {
+  padding: 12px;
+  background-color: #f6ffed;
+  border-radius: 6px;
+  border: 1px solid #b7eb8f;
+  margin-bottom: 20px;
+}
+
+.purchaseButton {
+  width: 100%;
+  height: 48px;
+  font-size: 16px;
+}
+
+/* 移动端响应式设计 */
+@media (max-width: 768px) {
+  .photoDetailContainer {
+    flex-direction: column;
+    gap: 16px;
+    min-height: auto;
+  }
+  
+  .photoImageContainer {
+    height: clamp(200px, 35vh, 320px);
+    margin-bottom: 12px;
+  }
+  
+  .photoInfoContainer {
+    min-height: auto;
+    justify-content: flex-start;
+  }
+  
+  .sizeSelectionContainer {
+    margin-bottom: 12px;
+  }
+  
+  .sizeCard {
+    height: 64px;
+    min-height: 56px;
+    padding: 8px 4px;
+  }
+  
+  .sizeCard .ant-card-body {
+    padding: 4px;
+  }
+  
+  /* 移动端尺寸卡片文字样式 */
+  .sizeCard .ant-typography {
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+    margin-bottom: 2px !important;
+  }
+  
+  .sizeCard .ant-typography:last-child {
+    font-size: 13px !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .priceDisplay {
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .purchaseButton {
+    height: 44px;
+    font-size: 14px;
+  }
+}
