@@ -1,5 +1,5 @@
 import { prepareGetRequest, preparePostRequest } from "@/util/request-helper";
-const urlprefix = "ji4ct5zze5";
+const urlprefix = "a39pgnetta";
 // 图片上传接口类型定义
 interface UploadPhotoRequest {
     photo_data: string;  // Base64编码的图片数据
@@ -227,7 +227,7 @@ export async function save_photo_settings(
  * @returns Promise<PhotoGalleryResponse>
  */
 export async function get_photos_presigned_url(): Promise<PhotoGalleryResponse> {
-  const galleryUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/get_photos_presigned_url`;
+  const galleryUrl = `https://a39pgnetta.execute-api.us-east-1.amazonaws.com/get_photos_presigned_url`;
   
   console.log("!!!!=====get_photos_presigned_url START");
     console.log("Gallery URL:", galleryUrl);

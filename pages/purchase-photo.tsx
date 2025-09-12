@@ -7,7 +7,6 @@ import PaymentButton from '../components/PaymentButton';
 import { CartItem } from '../components/ShoppingCart';
 import { useCart } from '../contexts/CartContext';
 import PhotoImage from '../components/PhotoImage';
-import { get_photos_presigned_url } from '../util/aws-api';
 import styles from '../styles/home.module.css';
 
 const { Title, Text } = Typography;
@@ -18,7 +17,6 @@ const PurchasePhotoPage: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartTotal, setCartTotal] = useState<number>(0);
   const [loading, setLoading] = useState(true);
-  const [thumbRefreshCounter, setThumbRefreshCounter] = useState(0);
 
   // 辅助函数：提取并格式化文件名和尺寸
   const formatFileNameWithSize = (item: CartItem) => {
@@ -75,34 +73,6 @@ const PurchasePhotoPage: React.FC = () => {
     }
     setLoading(false);
   }, [router]);
-
-  // 确保预签名链接存在（登录后localStorage被清空时补齐）
-  useEffect(() => {
-    const ensurePresignedUrls = async () => {
-      if (typeof window === 'undefined') return;
-      try {
-        const storedData = localStorage.getItem('photo_gallery_data');
-        const haveAll = (() => {
-          if (!storedData) return false;
-          try {
-            const list = JSON.parse(storedData);
-            const ids = new Set(list.map((p: any) => p.id));
-            return cartItems.every(ci => ids.has(String(ci.id).split('-')[0]));
-          } catch {
-            return false;
-          }
-        })();
-        if (!haveAll && cartItems.length > 0) {
-          await get_photos_presigned_url();
-          // 触发缩略图重新挂载，读取最新本地缓存
-          setThumbRefreshCounter((c) => c + 1);
-        }
-      } catch (e) {
-        // 忽略错误，UI 会显示占位
-      }
-    };
-    ensurePresignedUrls();
-  }, [cartItems]);
 
   const handlePaymentSuccess = (sessionId: string) => {
     message.success('支付成功！正在跳转到支付确认页面...');
@@ -226,7 +196,6 @@ const PurchasePhotoPage: React.FC = () => {
                       minWidth: '80px'
                     }}>
                       <PhotoImage 
-                        key={`${item.id}-${thumbRefreshCounter}`}
                         photoId={String(item.id).split('-')[0]} 
                         alt={item.alt} 
                         width={80} 

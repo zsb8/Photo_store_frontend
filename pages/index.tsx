@@ -134,17 +134,12 @@ const HomePage = () => {
                         <Card
                           hoverable
                           cover={
-                            <div 
-                              style={{ position: 'relative', height: '200px', overflow: 'hidden', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}
-                              onContextMenu={(e) => e.preventDefault()}
-                            >
+                            <div style={{ position: 'relative', height: '200px', overflow: 'hidden' }}>
                               <Image
                                 src={photo.presigned_url}
                                 alt={photo.filename || `图片 ${photo.id}`}
                                 fill
                                 style={{ objectFit: 'cover' }}
-                                draggable={false}
-                                onContextMenu={(e) => e.preventDefault()}
                                 onError={(e) => {
                                   console.error('Image load error for:', photo.presigned_url);
                                   // 可以在这里设置一个默认图片

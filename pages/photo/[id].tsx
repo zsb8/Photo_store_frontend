@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { Card, Button, Typography, Space, Divider, message, Radio, Row, Col, Spin, Alert, Form, Input } from "antd";
+import { Card, Button, Typography, Space, Divider, message, Radio, Row, Col, Spin, Alert } from "antd";
 import { ArrowLeftOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { useCart } from "../../contexts/CartContext";
 import ShoppingCart from "../../components/ShoppingCart";
@@ -39,14 +39,6 @@ const PhotoDetailPage = () => {
   const [photoInfo, setPhotoInfo] = useState<PhotoInfoData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
-  const [contactForm] = Form.useForm();
-  const [contactInfo, setContactInfo] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    email: ''
-  });
 
   // 获取图片详细信息
   useEffect(() => {
@@ -77,24 +69,6 @@ const PhotoDetailPage = () => {
 
     fetchPhotoInfo();
   }, [id]);
-
-  // 加载并保存联系方式到本地
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const saved = localStorage.getItem('contact_info');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setContactInfo(parsed);
-        contactForm.setFieldsValue(parsed);
-      }
-    } catch {}
-  }, [contactForm]);
-
-  const handleContactChange = (changed: any, all: any) => {
-    setContactInfo(all);
-    try { localStorage.setItem('contact_info', JSON.stringify(all)); } catch {}
-  };
 
   // 从本地存储获取图片的预授权链接
   const getPresignedUrlFromStorage = (photoId: string): string | null => {
@@ -150,14 +124,6 @@ const PhotoDetailPage = () => {
   const currentPrice = selectedSizeData?.price || 0;
 
   const handleAddToCart = () => {
-    // 校验联系方式
-    const { name, phone, address, email } = contactInfo;
-    const phoneOk = /[\d\s+\-()]{7,20}/.test(phone || '');
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || '');
-    if (!name || !address || !phoneOk || !emailOk) {
-      message.error('请先填写完整且有效的联系方式（姓名、电话、地址、邮箱）');
-      return;
-    }
     if (photoInfo && selectedSizeData) {
       const cartItemId = `${photoInfo.id}-${selectedSize}`;
       addToCart({
@@ -167,8 +133,6 @@ const PhotoDetailPage = () => {
         price: selectedSizeData.price,
         description: `${photoInfo.description || photoInfo.title} - ${selectedSizeData.label}`
       });
-      // 存储一次联系方式，供后续购买页或后台使用
-      try { localStorage.setItem('contact_info', JSON.stringify(contactInfo)); } catch {}
       message.success(`已添加${selectedSizeData.label}到购物车！`);
     }
   };
@@ -227,31 +191,15 @@ const PhotoDetailPage = () => {
               <div style={{ flex: '1', display: 'flex', flexDirection: 'column' }}>
                 <div className={styles.photoImageContainer}>
                   {presignedUrl ? (
-                    <div
-                      onClick={() => setIsPreviewOpen(true)}
-                      onContextMenu={(e) => e.preventDefault()}
-                      style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        position: 'relative', 
-                        cursor: 'zoom-in',
-                        userSelect: 'none',
-                        WebkitUserSelect: 'none',
-                        WebkitTouchCallout: 'none'
+                    <Image
+                      src={presignedUrl}
+                      alt={photoInfo.title || photoInfo.filename}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      onError={(e) => {
+                        console.error('Image load error for presigned URL:', presignedUrl);
                       }}
-                    >
-                      <Image
-                        src={presignedUrl}
-                        alt={photoInfo.title || photoInfo.filename}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                        draggable={false}
-                        onContextMenu={(e) => e.preventDefault()}
-                        onError={(e) => {
-                          console.error('Image load error for presigned URL:', presignedUrl);
-                        }}
-                      />
-                    </div>
+                    />
                   ) : (
                     <div style={{ 
                       display: 'flex', 
@@ -349,45 +297,7 @@ const PhotoDetailPage = () => {
                 </div>
                 
                 {/* 购买按钮 */}
-                <div style={{ marginTop: '16px' }}>
-                  <Alert 
-                    type="info" 
-                    showIcon 
-                    message={<span style={{ fontSize: 12 }}>温馨提示</span>} 
-                    description={<span style={{ fontSize: 12, lineHeight: 1.4 }}>购买为实物邮寄服务：请准确填写收件人的姓名、电话、邮寄地址与邮箱，我们将使用实物方式寄送照片。</span>} 
-                    style={{ marginBottom: 8, padding: 8 }} 
-                  />
-
-                  {/* 联系方式表单 */}
-                  <Form 
-                    form={contactForm}
-                    layout="vertical"
-                    initialValues={contactInfo}
-                    onValuesChange={handleContactChange}
-                    style={{ background: '#fafafa', padding: 8, border: '1px solid #f0f0f0', borderRadius: 8, marginBottom: 10 }}
-                    size="small"
-                  >
-                    <Row gutter={8}>
-                      <Col span={12}>
-                        <Form.Item label={<span style={{ fontSize: 12 }}>姓名</span>} name="name" rules={[{ required: true, message: '请输入姓名' }]} style={{ marginBottom: 8 }}> 
-                          <Input placeholder="请输入收件人姓名" size="small" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item label={<span style={{ fontSize: 12 }}>电话</span>} name="phone" rules={[{ required: true, message: '请输入电话' }]} style={{ marginBottom: 8 }}> 
-                          <Input placeholder="用于快递联系，如 +1 450-456-7890" size="small" />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                    <Form.Item label={<span style={{ fontSize: 12 }}>邮寄地址</span>} name="address" rules={[{ required: true, message: '请输入邮寄地址' }]} style={{ marginBottom: 8 }}> 
-                      <Input placeholder="街道、城市、省、邮编" size="small" />
-                    </Form.Item>
-                    <Form.Item label={<span style={{ fontSize: 12 }}>电子邮箱</span>} name="email" rules={[{ required: true, type: 'email', message: '请输入有效邮箱' }]} style={{ marginBottom: 8 }}> 
-                      <Input placeholder="用于接收通知和电子收据" size="small" />
-                    </Form.Item>
-                  </Form>
-
-                  {/* 购买按钮 */}
+                <div style={{ marginTop: 'auto' }}>
                   <Button
                     type={getCartItem()?.purchased ? "default" : (isCurrentSizeInCart() ? "default" : "primary")}
                     size="large"
@@ -404,62 +314,6 @@ const PhotoDetailPage = () => {
           </Card>
         </div>
       </main>
-      {isPreviewOpen && presignedUrl && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.85)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000
-          }}
-          onClick={() => setIsPreviewOpen(false)}
-        >
-          <button
-            onClick={(e) => { e.stopPropagation(); setIsPreviewOpen(false); }}
-            aria-label="关闭预览"
-            style={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              border: 'none',
-              background: 'rgba(0,0,0,0.6)',
-              color: '#fff',
-              fontSize: 18,
-              cursor: 'pointer',
-              lineHeight: '36px',
-              textAlign: 'center'
-            }}
-          >
-            ×
-          </button>
-          <img
-            src={presignedUrl}
-            alt={photoInfo.title || photoInfo.filename}
-            style={{
-              maxWidth: '90vw',
-              maxHeight: '90vh',
-              width: 'auto',
-              height: 'auto',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-              borderRadius: 4,
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-              WebkitTouchCallout: 'none'
-            }}
-            onClick={(e) => e.stopPropagation()}
-            onContextMenu={(e) => e.preventDefault()}
-            draggable={false}
-          />
-        </div>
-      )}
     </>
   );
 };

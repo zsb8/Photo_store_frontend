@@ -79,18 +79,18 @@ export default function Login() {
   return (
     <div>
       <div className={styles.app}>
-        <div className={styles.title}>Account Login</div>
+        <div className={styles.title}>Statement of Account Login</div>
         <div>
           <Form 
             name="basic" 
             {...(isMobile 
               ? { layout: 'vertical' as const } 
-              : { layout: 'horizontal' as const, labelCol: { span: 8, style: { paddingRight: 12, whiteSpace: 'nowrap' as const } }, wrapperCol: { span: 16 } })}
+              : { layout: 'horizontal' as const, labelCol: { span: 6 }, wrapperCol: { span: 18 } })}
             initialValues={{ remember: true }} 
             onFinish={handleSubmit} 
             autoComplete="off"
             size={isMobile ? 'middle' : 'middle'}
-            style={{ maxWidth: 420 }}
+            style={{ maxWidth: 360 }}
           >
             <Form.Item label="Username" name="username" rules={[{ required: true, message: "Please input your username!" }]}> 
               <Input className={styles.inputBox} />
@@ -111,13 +111,13 @@ export default function Login() {
             </Form.Item>
           </Form>
         </div>
-        {/* <div className={styles.bottomLink}>
+        <div className={styles.bottomLink}>
           <div>
             <Button type="link" block onClick={handleActivate}>
               Activate Account
             </Button>
           </div>
-        </div> */}
+        </div>
         <div>
           {displayError ? (
             <>

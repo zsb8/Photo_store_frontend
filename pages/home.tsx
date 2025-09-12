@@ -148,7 +148,7 @@ export default function ReportDesigner() {
               </div>
             </Card>
 
-            {/* <Card 
+            <Card 
               title="支付历史" 
               extra={<DollarOutlined />}
               style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
@@ -163,7 +163,7 @@ export default function ReportDesigner() {
                   查看历史
                 </Button>
               </div>
-            </Card> */}
+            </Card>
           </div>
 
           <div style={{ marginTop: '32px', padding: '24px', background: '#f0f2f5', borderRadius: '8px' }}>
