@@ -1,5 +1,5 @@
 {
-  "name": "football-ui",
+  "name": "photography-ui",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -42,7 +42,7 @@
     "yup": "^1.0.0"
   },
   "engines": {
-    "node": "23.x"
+    "node": "20.x"
   },
   "overrides": {
     "@types/d3-dispatch": "3.0.6"
