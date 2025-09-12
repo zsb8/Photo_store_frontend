@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'export',
+  
   trailingSlash: true,
   images: {
     domains: [
@@ -23,6 +23,7 @@ const nextConfig = {
         pathname: '/**',
       }
     ],
+    unoptimized: true,
   },
   experimental: {
     esmExternals: 'loose',

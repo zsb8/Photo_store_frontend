@@ -15,8 +15,14 @@ frontend:
       commands:
         - "echo 'Building the app...'"
         - "npm run build"
+        - "echo 'Creating standalone build for Amplify...'"
+        - "npx next build"
+        - "echo 'Checking .next directory contents...'"
+        - "ls -la .next/"
+        - "echo 'Looking for required-server-files.json...'"
+        - "find .next -name 'required-server-files.json' -type f"
   artifacts:
-    baseDirectory: out
+    baseDirectory: .next
     files:
       - '**/*'
   cache:
