@@ -1,0 +1,31 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - "nvm install 20"
+        - "nvm use 20"
+        - "echo '!!! node version $(node -v)'"
+        - "node -v"
+        - "echo '!!! npm version $(npm -v)'"
+        - "npm -v"
+        - "echo 'Installing dependencies...'"
+        - "npm ci"
+    build:
+      commands:
+        - "echo 'Building the app...'"
+        - "npm run build"
+        - "echo 'Creating standalone build for Amplify...'"
+        - "npx next build"
+        - "echo 'Checking .next directory contents...'"
+        - "ls -la .next/"
+        - "echo 'Looking for required-server-files.json...'"
+        - "find .next -name 'required-server-files.json' -type f"
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
