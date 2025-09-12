@@ -3,6 +3,8 @@ frontend:
   phases:
     preBuild:
       commands:
+        - "nvm install 20"
+        - "nvm use 20"
         - "echo '!!! node version $(node -v)'"
         - "node -v"
         - "echo '!!! npm version $(npm -v)'"
