@@ -29,6 +29,7 @@ interface CartProviderProps {
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // 从localStorage加载购物车数据
   useEffect(() => {
@@ -37,11 +38,17 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         const savedCart = localStorage.getItem('cartItems');
         if (savedCart) {
           try {
-            setCartItems(JSON.parse(savedCart));
+            const parsedCart = JSON.parse(savedCart);
+            setCartItems(parsedCart);
+            console.log('Loaded cart from localStorage:', parsedCart);
           } catch (error) {
             console.error('Error loading cart from localStorage:', error);
+            setCartItems([]);
           }
+        } else {
+          setCartItems([]);
         }
+        setIsInitialized(true);
       };
 
       // 初始加载
@@ -63,12 +70,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   }, []);
 
-  // 保存购物车数据到localStorage
+  // 保存购物车数据到localStorage（只在初始化完成后）
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && isInitialized) {
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
+      console.log('Saved cart to localStorage:', cartItems);
     }
-  }, [cartItems]);
+  }, [cartItems, isInitialized]);
 
   const addToCart = (item: CartItem) => {
     setCartItems(prev => {
@@ -93,6 +101,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('cartItems');
       localStorage.removeItem('cartTotal');
+      console.log('Cart cleared and localStorage removed');
     }
   };
 
@@ -129,10 +138,16 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         const savedCart = localStorage.getItem('cartItems');
         if (savedCart) {
           try {
-            setCartItems(JSON.parse(savedCart));
+            const parsedCart = JSON.parse(savedCart);
+            setCartItems(parsedCart);
+            console.log('Cart refreshed from localStorage:', parsedCart);
           } catch (error) {
             console.error('Error loading cart from localStorage:', error);
+            setCartItems([]);
           }
+        } else {
+          setCartItems([]);
+          console.log('No cart data found in localStorage, setting empty cart');
         }
       };
       loadCartFromStorage();

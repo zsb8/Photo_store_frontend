@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Card, Button, Typography, Space, Result, Spin, Descriptions, message } from 'antd';
 import { CheckCircleOutlined, HomeOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
@@ -22,8 +22,10 @@ const PaymentSuccessPage: React.FC = () => {
   const router = useRouter();
   const [session, setSession] = useState<PaymentSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState<string | null>(null);
+  const hasMarkedAsPurchasedRef = useRef(false);
   const { session_id } = router.query;
-  const { markAsPurchased } = useCart();
+  const { markAsPurchased, refreshCart } = useCart();
 
   const fetchSessionDetails = useCallback(async () => {
     try {
@@ -49,14 +51,22 @@ const PaymentSuccessPage: React.FC = () => {
   }, [session_id, fetchSessionDetails]);
 
   useEffect(() => {
-    // 支付成功后，标记购物车中的商品为已购买
-    if (session && (session.payment_status === 'paid' || session.payment_status === 'complete')) {
+    // 支付成功后，标记购物车中的商品为已购买（只执行一次）
+    if (session && 
+        (session.payment_status === 'paid' || session.payment_status === 'complete') && 
+        !hasMarkedAsPurchasedRef.current) {
       console.log('Payment confirmed as paid/complete, marking items as purchased');
+      hasMarkedAsPurchasedRef.current = true;
       markAsPurchased();
+      // 延迟刷新购物车数据，确保状态更新
+      setTimeout(() => {
+        refreshCart();
+        console.log('Cart refreshed after payment success');
+      }, 100);
     } else if (session) {
       console.log('Session found but payment status is:', session.payment_status);
     }
-  }, [session, markAsPurchased]);
+  }, [session]); // 只依赖session，使用ref避免重新执行
 
   const formatAmount = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
@@ -67,6 +77,25 @@ const PaymentSuccessPage: React.FC = () => {
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleString();
+  };
+
+  const handleNavigation = async (path: string, buttonType: string) => {
+    try {
+      setNavigating(buttonType);
+      console.log(`Navigating to ${path}...`);
+      
+      // 确保购物车数据已保存
+      if (typeof window !== 'undefined') {
+        const cartData = localStorage.getItem('cartItems');
+        console.log('Cart data before navigation:', cartData);
+      }
+      
+      await router.push(path);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      message.error('页面跳转失败，请重试');
+      setNavigating(null);
+    }
   };
 
   if (loading) {
@@ -116,18 +145,20 @@ const PaymentSuccessPage: React.FC = () => {
                 type="primary" 
                 key="home"
                 icon={<HomeOutlined />}
-                onClick={() => router.push('/')}
+                loading={navigating === 'home'}
+                onClick={() => handleNavigation('/', 'home')}
                 size="large"
               >
-                返回首页
+                {navigating === 'home' ? '跳转中...' : '返回首页'}
               </Button>,
               <Button 
                 key="payment"
                 icon={<ShoppingOutlined />}
-                onClick={() => router.push('/')}
+                loading={navigating === 'payment'}
+                onClick={() => handleNavigation('/home', 'payment')}
                 size="large"
               >
-                继续购买
+                {navigating === 'payment' ? '跳转中...' : '继续购买'}
               </Button>
             ]}
           />
