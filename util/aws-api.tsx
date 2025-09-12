@@ -507,6 +507,7 @@ interface PhotoGalleryItem {
     created_at: string;
     presigned_url: string;
     expires_in: number;
+    title?: string;  // 添加title字段
 }
 
 interface PhotoGalleryResponse {

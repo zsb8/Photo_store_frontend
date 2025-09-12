@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import { useCart } from "../contexts/CartContext";
 import ShoppingCart from "../components/ShoppingCart";
 import styles from "../styles/home.module.css";
-import { get_photos_presigned_url } from "../util/aws-api";
+import { get_photos_presigned_url, get_all_photo_settings } from "../util/aws-api";
 
 const { Title, Text } = Typography;
 
@@ -18,6 +18,7 @@ interface PhotoItem {
   created_at: string;
   presigned_url: string;
   expires_in: number;
+  title?: string;  // 添加title字段
 }
 
 const HomePage = () => {
@@ -31,16 +32,47 @@ const HomePage = () => {
     const fetchPhotos = async () => {
       try {
         setLoading(true);
-        const result = await get_photos_presigned_url();
         
-        if (result.success) {
-          setPhotos(result.data);
+        // 获取所有图片设置信息（包含标题）
+        const photoSettingsResponse = await get_all_photo_settings();
+        console.log('Photo settings response:', photoSettingsResponse);
+        
+        if (photoSettingsResponse.data && photoSettingsResponse.data.length > 0) {
+          // 获取图片画廊数据（包含预授权链接）
+          const galleryResponse = await get_photos_presigned_url();
+          console.log('Gallery response:', galleryResponse);
+          
+          // 创建图片ID到预授权链接的映射
+          const presignedUrlMap = new Map<string, string>();
+          if (galleryResponse.data) {
+            galleryResponse.data.forEach((item: any) => {
+              presignedUrlMap.set(item.id, item.presigned_url);
+            });
+          }
+          
+          // 转换数据格式以匹配 PhotoItem 接口
+          const convertedPhotos: PhotoItem[] = photoSettingsResponse.data.map((item: any, index: number) => {
+            return {
+              id: item.id || `photo_${index}`,
+              filename: item.filename || `Photo ${index + 1}`,
+              s3_newsize_path: item.s3_newsize_path || '',
+              created_at: item.upload_datetime || new Date().toISOString(),
+              presigned_url: presignedUrlMap.get(item.id) || item.s3_newsize_path || '',
+              expires_in: 3600, // 默认1小时
+              title: item.title || item.filename || `Photo ${index + 1}`
+            };
+          });
+          
+          setPhotos(convertedPhotos);
+          console.log('Loaded photos with titles:', convertedPhotos);
         } else {
-          message.error('获取图片失败: ' + result.message);
+          message.error('暂无照片可售');
+          setPhotos([]);
         }
       } catch (error) {
         console.error('获取图片时发生错误:', error);
         message.error('获取图片时发生错误');
+        setPhotos([]);
       } finally {
         setLoading(false);
       }
@@ -182,7 +214,7 @@ const HomePage = () => {
                           className={styles.photoCard}
                         >
                           <Card.Meta
-                            title={photo.filename || `图片 ${photo.id}`}
+                            title={(photo.title || photo.filename || `图片 ${photo.id}`)?.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '')}
                             description=""
                           />
                         </Card>
