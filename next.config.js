@@ -2,9 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'export',
+  
   trailingSlash: true,
-  distDir: 'out',
   images: {
     domains: [
       'zsbtest.s3.amazonaws.com',
@@ -24,6 +23,7 @@ const nextConfig = {
         pathname: '/**',
       }
     ],
+    unoptimized: true,
   },
   experimental: {
     esmExternals: 'loose',

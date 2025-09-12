@@ -116,7 +116,7 @@ const PaymentSuccessPage: React.FC = () => {
                 type="primary" 
                 key="home"
                 icon={<HomeOutlined />}
-                onClick={() => window.location.href = '/'}
+                onClick={() => router.push('/')}
                 size="large"
               >
                 返回首页
@@ -124,7 +124,7 @@ const PaymentSuccessPage: React.FC = () => {
               <Button 
                 key="payment"
                 icon={<ShoppingOutlined />}
-                onClick={() => window.location.href = '/'}
+                onClick={() => router.push('/')}
                 size="large"
               >
                 继续购买

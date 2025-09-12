@@ -5,16 +5,27 @@ import styles from "@/styles/login.module.css";
 import { useEffect } from "react";
 import { LoadingOutlined } from "@ant-design/icons";
 import { isAuthorized, signIn } from "../util/user-util";
-import { useMediaQuery } from "react-responsive";
 const { TextArea } = Input;
 
 export default function Login() {
   console.log("Rendering");
-  const isMobile = useMediaQuery({ maxWidth: 768 });
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
   const [displayError, setError] = useState<string | null>(null);
   const [isLoading, setLoading] = useState<boolean>(false);
   const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
+
+  // SSR-safe media query
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (isAuthorized()) {
