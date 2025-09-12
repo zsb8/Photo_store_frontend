@@ -21,9 +21,9 @@ interface UploadPhotoResponse {
 }
 
 /**
- * 上传图片到AWS API，注意，这里因为AWS APIGateway的限制，单个图片大小不能超过2M
+ * 上传图片到AWS API
  * @param photoData - Base64编码的图片数据
- * @param filename - 文件名
+ * @param fileName - 文件名
  * @param title - 图片标题（可选）
  * @param description - 图片描述（可选）
  * @param prices - 价格信息（可选）
@@ -31,19 +31,20 @@ interface UploadPhotoResponse {
  */
 export async function upload_photo(
     photoData: string, 
-    filename: string, 
+    fileName: string, 
     title?: string, 
     description?: string, 
     prices?: { small: number; medium: number; large: number }
 ): Promise<UploadPhotoResponse> {
+    console.log("!!!!=====upload_photo", photoData, fileName, title, description, prices);
     const uploadUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/upload_photo`;
     
     // 第一步：上传图片（只使用photo_data和file_name）
     const uploadData: UploadPhotoRequest = {
         photo_data: photoData,
-        file_name: filename
+        file_name: fileName
     };
-    console.log("Uploading photo:", { filename, dataLength: photoData.length });
+    console.log("Uploading photo:", { fileName, dataLength: photoData.length });
     const requestParams = preparePostRequest(JSON.stringify(uploadData));
     
     try {
@@ -69,18 +70,20 @@ export async function upload_photo(
         
         const record_id = result.result.record_id;
         console.log("Parameters being passed to save_photo_settings:", {
-            filename,
+            fileName,
             title,
             description,
             prices,
             record_id,
+            remark: "图片上传时自动保存的设置"
         });
         
         const saveSettingsResult = await save_photo_settings(
-            filename,
+            fileName,
             title,
             description,
             prices,
+            "图片上传时自动保存的设置",
             record_id
         );
         
@@ -96,7 +99,7 @@ export async function upload_photo(
             success: true,
             message: result.message || "图片上传成功",
             photo_url: result.photo_url,
-            file_name: result.file_name || filename
+            file_name: result.file_name || fileName
         };
     } catch (error) {
         console.error('Error uploading photo:', error);
@@ -129,7 +132,7 @@ export function fileToBase64(file: File): Promise<string> {
 // 保存图片设置到DynamoDB的接口类型定义
 interface SavePhotoSettingsRequest {
     data: {
-        filename: string;
+        fileName: string;
         title?: string;
         description?: string;
         prices?: {
@@ -139,6 +142,7 @@ interface SavePhotoSettingsRequest {
         };
         record_id?: string;
     };
+    remark?: string;
 }
 
 interface SavePhotoSettingsResponse {
@@ -148,25 +152,27 @@ interface SavePhotoSettingsResponse {
 
 /**
  * 保存图片设置到AWS DynamoDB的photo_settings表格
- * @param filename - 文件名
+ * @param fileName - 文件名
  * @param title - 图片标题（可选）
  * @param description - 图片描述（可选）
  * @param prices - 价格信息（可选）
+ * @param remark - 备注（可选）
  * @param record_id - 记录ID（可选）
  * @returns Promise<SavePhotoSettingsResponse>
  */
 export async function save_photo_settings(
-    filename: string,
+    fileName: string,
     title?: string,
     description?: string,
     prices?: { small: number; medium: number; large: number },
+    remark?: string,
     record_id?: string
 ): Promise<SavePhotoSettingsResponse> {
-    console.log("!!!!=====save_photo_settings", filename, title, description, prices, record_id);
+    console.log("!!!!=====save_photo_settings", fileName, title, description, prices, remark, record_id);
     const saveUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/save_photo_settings`;
     const saveData: SavePhotoSettingsRequest = {
         data: {
-            filename: filename,
+            fileName: fileName,
             title: title,
             description: description,
             prices: prices ? {
@@ -176,6 +182,7 @@ export async function save_photo_settings(
             } : undefined,
             record_id: record_id
         },
+        remark: remark
     };
     console.log("Saving photo settings:", saveData);
     const requestParams = preparePostRequest(JSON.stringify(saveData));
@@ -317,136 +324,6 @@ export async function get_photos_presigned_url(): Promise<PhotoGalleryResponse> 
             data: [],
             count: 0
         };
-    }
-}
-
-/**
- * 获取用于上传超大图片的预签名URL（S3直传）
- * @param filename 原始文件名，例如 PXL_20250907_143718997.MP.jpg
- * @param contentType 文件Content-Type，例如 image/jpeg
- */
-export interface PresignBigPhotoData {
-    method: string;
-    url: string;
-    headers: Record<string, string>;
-    bucket: string;
-    key: string;
-    expires_in: number;
-}
-
-export interface PresignBigPhotoResponse {
-    success: boolean;
-    message: string;
-    data?: PresignBigPhotoData;
-}
-
-export async function get_presigned_url_for_upload_bigphotos(
-    filename: string,
-    contentType: string
-): Promise<PresignBigPhotoResponse> {
-    const presignUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/get_presigned_url_for_upload_bigphotos`;
-    console.log("!!!!=====get_presigned_url_for_upload_bigphotos START");
-    console.log("Presign URL:", presignUrl);
-    console.log("Payload:", { filename, content_type: contentType });
-
-    try {
-        const payload = { filename: filename, content_type: contentType };
-        const requestParams = preparePostRequest(JSON.stringify(payload));
-
-        const response = await fetch(presignUrl, requestParams);
-        const result = await response.json();
-        console.log("Presign response status:", response.status, response.statusText);
-        console.log("Presign response body:", result);
-
-        if (!response.ok) {
-            throw new Error(result.message || `HTTP ${response.status}: ${response.statusText}`);
-        }
-        if (result.error) {
-            throw new Error(result.message || result.error);
-        }
-
-        return {
-            success: true,
-            message: result.message || "Success",
-            data: result.data,
-        };
-    } catch (error) {
-        console.error('get_presigned_url_for_upload_bigphotos ERROR:', error);
-        return {
-            success: false,
-            message: error instanceof Error ? error.message : '获取预签名URL失败',
-        };
-    }
-}
-
-/**
- * 使用预签名URL将大图片直接上传到S3
- * @param file 要上传的文件对象
- * @param presignData 从get_presigned_url_for_upload_bigphotos返回的预签名数据
- */
-export async function upload_bigphoto(
-    file: File,
-    filename: string,
-    contentType: string,
-    title?: string,
-    description?: string,
-    prices?: { small: number; medium: number; large: number }
-): Promise<UploadPhotoResponse> {
-    console.log("!!!!=====upload_bigphoto START");
-    console.log("File:", { name: file.name, size: file.size, type: file.type });
-    console.log("filename/ContentType:", filename, contentType);
-
-    try {
-        // 1) 获取预签名URL
-        const presign = await get_presigned_url_for_upload_bigphotos(filename, contentType);
-        if (!presign.success || !presign.data) {
-            throw new Error(presign.message || '获取预签名URL失败');
-        }
-        const { method, url, headers, key, bucket } = presign.data;
-
-        // 2) 使用PUT方法直接上传到S3
-        const response = await fetch(url, {
-            method: method,
-            headers: headers,
-            body: file
-        });
-
-        // 3) S3通常仅返回状态码；200/204表示成功
-        if (!response.ok) {
-            const errorText = await response.text().catch(() => '');
-            console.error('S3 upload error response:', errorText);
-            throw new Error(`S3 upload failed: ${response.status} ${response.statusText}`);
-        }
-
-        // 直传成功后，保存图片设置到DynamoDB（record_id未知，省略）
-        try {
-            const saveSettingsResult = await save_photo_settings(
-                filename,
-                title,
-                description,
-                prices,
-            );
-            if (!saveSettingsResult.success) {
-                console.warn('Big photo uploaded but settings save failed:', saveSettingsResult.message);
-            }
-        } catch (e) {
-            console.warn('Failed to save settings after big photo upload:', e);
-        }
-
-        const photoUrl = bucket && key ? `https://${bucket}.s3.amazonaws.com/${key}` : url.split('?')[0];
-
-        return {
-            success: true,
-            message: '图片上传成功',
-            photo_url: photoUrl,
-            file_name: filename
-        };
-    } catch (error) {
-        console.error('upload_bigphoto ERROR:', error);
-        return {
-            success: false,
-            message: error instanceof Error ? error.message : '图片上传失败'
-        } as UploadPhotoResponse;
     }
 }
 

@@ -3,7 +3,7 @@ import { Layout, Menu, Card, Upload, Button, Form, Input, InputNumber, Space, me
 import { UploadOutlined, EditOutlined, DeleteOutlined, PlusOutlined, HomeOutlined, PictureOutlined, ClearOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
 import { photos, Photo, PhotoSize } from '../data/photos';
-import { upload_photo, fileToBase64, get_all_photo_settings, get_photos_presigned_url, save_photo_settings, upload_bigphoto } from '../util/aws-api';
+import { upload_photo, fileToBase64, get_all_photo_settings, get_photos_presigned_url, save_photo_settings } from '../util/aws-api';
 import styles from '../styles/photos-backend-management.module.css';
 
 const { Header, Sider, Content } = Layout;
@@ -21,7 +21,7 @@ interface PhotoFormData {
 
 const PhotosBackendManagement: React.FC = () => {
   const router = useRouter();
-  const [selectedMenu, setSelectedMenu] = useState<string>('upload-photo');
+  const [selectedMenu, setSelectedMenu] = useState<string>('upload-single');
   const [photoList, setPhotoList] = useState<Photo[]>([]);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null);
@@ -126,10 +126,11 @@ const PhotosBackendManagement: React.FC = () => {
   // 菜单项配置
   const menuItems = [
     {
-      key: 'upload-photo',
+      key: 'upload-single',
       icon: <UploadOutlined />,
-      label: '上传图片',
+      label: '上传单个图片',
     },
+    
     {
       key: 'edit-photos',
       icon: <EditOutlined />,
@@ -151,16 +152,16 @@ const PhotosBackendManagement: React.FC = () => {
     setSelectedMenu(key);
   };
 
-  // 处理图片上传（自动判断大小选择接口）
-  const handlePhotoUpload = useCallback(async (values: any) => {
+  // 处理单个图片上传
+  const handleSingleUpload = useCallback(async (values: any) => {
     try {
-      console.log('表单数据:', values);
+      console.log('表单数据:', values); // 调试信息
       console.log('价格数据:', {
         smallPrice: values.smallPrice,
         mediumPrice: values.mediumPrice,
         largePrice: values.largePrice
-      });
-      console.log('选择的图片:', selectedImage);
+      }); // 调试价格信息
+      console.log('选择的图片:', selectedImage); // 调试信息
       
       // 优先使用selectedImage，如果没有则使用表单数据
       let file = null;
@@ -175,52 +176,45 @@ const PhotosBackendManagement: React.FC = () => {
         return;
       }
 
-      const fileSizeMB = file.size / (1024 * 1024);
-      const isLargeFile = fileSizeMB >= 2;
-      
-      console.log(`文件大小: ${fileSizeMB.toFixed(2)}MB, 使用${isLargeFile ? '大图' : '小图'}上传接口`);
-
       // 显示上传进度
-      const loadingMessage = message.loading(`正在上传图片到AWS${isLargeFile ? '(大图直传)' : ''}...`, 0);
+      const loadingMessage = message.loading('正在上传图片到AWS...', 0);
       
       try {
-        let uploadResult;
+        // 将文件转换为Base64
+        const base64Data = await fileToBase64(file);
         
-        if (isLargeFile) {
-          // 大图：使用upload_bigphoto直传S3
-          uploadResult = await upload_bigphoto(
-            file,
-            file.name,
-            file.type || 'image/jpeg',
-            values.alt,
-            values.description,
-            {
-              small: values.smallPrice || 5,
-              medium: values.mediumPrice || 10,
-              large: values.largePrice || 20
-            }
-          );
-        } else {
-          // 小图：使用upload_photo（Base64）
-          const base64Data = await fileToBase64(file);
-          uploadResult = await upload_photo(
+        // 调用AWS API上传图片
+        const uploadResult = await upload_photo(
             base64Data, 
             file.name, 
             values.alt, 
             values.description, 
             {
-              small: values.smallPrice || 5,
-              medium: values.mediumPrice || 10,
-              large: values.largePrice || 20
+                small: values.smallPrice || 5,
+                medium: values.mediumPrice || 10,
+                large: values.largePrice || 20
             }
-          );
-        }
+        );
         
         if (!uploadResult.success) {
           throw new Error(uploadResult.message);
         }
 
-        // 上传成功后，自动刷新图片数据以获取真实的API数据
+        // 创建新的图片对象
+        const newPhoto: Photo = {
+          id: photoList.length + 1,
+          uniqueId: `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          src: uploadResult.photo_url || URL.createObjectURL(file), // 使用AWS返回的URL或本地URL
+          alt: values.alt || file.name,
+          description: values.description || '',
+          sizes: [
+            { size: 'small', label: '小图片', price: values.smallPrice || 5 },
+            { size: 'medium', label: '中图片', price: values.mediumPrice || 10 },
+            { size: 'large', label: '大图片', price: values.largePrice || 20 }
+          ],
+        };
+
+        setPhotoList(prev => [...prev, newPhoto]);
         uploadForm.resetFields();
         // 重置后重新设置默认价格
         uploadForm.setFieldsValue({
@@ -230,64 +224,7 @@ const PhotosBackendManagement: React.FC = () => {
         });
         setSelectedImage(null); // 清空选择的图片
         loadingMessage();
-        message.success(`图片上传成功！文件名: ${uploadResult.file_name} (${isLargeFile ? '大图直传' : '小图Base64'})`);
-        
-        // 延迟1秒后自动刷新图片数据，确保后端数据已保存
-        setTimeout(async () => {
-          try {
-            message.loading('正在刷新图片数据...', 0);
-            
-            // 获取所有图片设置信息
-            const photoSettingsResponse = await get_all_photo_settings();
-            console.log('Photo settings response after upload:', photoSettingsResponse);
-            
-            if (photoSettingsResponse.data && photoSettingsResponse.data.length > 0) {
-              // 获取图片画廊数据（包含预授权链接）
-              const galleryResponse = await get_photos_presigned_url();
-              console.log('Gallery response after upload:', galleryResponse);
-              
-              // 创建图片ID到预授权链接的映射
-              const presignedUrlMap = new Map<string, string>();
-              if (galleryResponse.data) {
-                galleryResponse.data.forEach((item: any) => {
-                  presignedUrlMap.set(item.id, item.presigned_url);
-                });
-              }
-              
-              // 转换数据格式以匹配 Photo 接口
-              const convertedPhotos: Photo[] = photoSettingsResponse.data.map((item: any, index: number) => {
-                // 从价格信息中提取价格值
-                const smallPrice = item.prices?.small?.S ? parseFloat(item.prices.small.S) : 5;
-                const mediumPrice = item.prices?.medium?.S ? parseFloat(item.prices.medium.S) : 10;
-                const largePrice = item.prices?.large?.S ? parseFloat(item.prices.large.S) : 20;
-                
-                return {
-                  id: item.id || `photo_${index}`, // 使用API返回的真实ID
-                  uniqueId: item.id || `photo_${index}`,
-                  src: presignedUrlMap.get(item.id) || item.s3_newsize_path || `/placeholder-${index + 1}.jpg`,
-                  alt: item.title || item.filename || `Photo ${index + 1}`,
-                  sizes: [
-                    { size: 'small', label: '小图片', price: smallPrice },
-                    { size: 'medium', label: '中图片', price: mediumPrice },
-                    { size: 'large', label: '大图片', price: largePrice }
-                  ],
-                  description: item.description || '暂无描述'
-                };
-              });
-              
-              setPhotoList(convertedPhotos);
-              message.destroy();
-              console.log('Refreshed photo data after upload:', convertedPhotos);
-            } else {
-              message.destroy();
-              message.warning('上传成功但未找到图片数据');
-            }
-          } catch (error) {
-            message.destroy();
-            console.error('Error refreshing photo data after upload:', error);
-            message.error(`刷新图片数据失败: ${error instanceof Error ? error.message : '未知错误'}`);
-          }
-        }, 1000);
+        message.success(`图片上传成功！文件名: ${uploadResult.file_name}`);
       } catch (uploadError) {
         loadingMessage();
         throw uploadError;
@@ -296,7 +233,6 @@ const PhotosBackendManagement: React.FC = () => {
       message.error(`上传失败: ${error instanceof Error ? error.message : '未知错误'}`);
     }
   }, [photoList, uploadForm, selectedImage]);
-
 
   
 
@@ -323,7 +259,7 @@ const PhotosBackendManagement: React.FC = () => {
       
       // 调用 save_photo_settings API 保存图片信息
       const saveResult = await save_photo_settings(
-        editingPhoto.alt, // filename 使用图片标题
+        editingPhoto.alt, // fileName 使用图片标题
         values.alt, // title 使用新的标题
         values.description, // description 使用新的描述
         {
@@ -331,6 +267,7 @@ const PhotosBackendManagement: React.FC = () => {
           medium: values.mediumPrice || 10,
           large: values.largePrice || 20
         }, // prices 使用新的价格
+        "通过编辑页面修改的图片设置", // remark
         editingPhoto.id.toString() // record_id 使用图片ID，转换为字符串
       );
 
@@ -410,8 +347,8 @@ const PhotosBackendManagement: React.FC = () => {
     message.success('图片删除成功！');
   };
 
-  // 处理图片选择变化
-  const handleImageChange = (info: any) => {
+  // 处理单个图片选择变化
+  const handleSingleImageChange = (info: any) => {
     const file = info.fileList[0] || null;
     setSelectedImage(file);
     
@@ -426,8 +363,10 @@ const PhotosBackendManagement: React.FC = () => {
     }
   };
 
-  // 清除图片选择
-  const clearImage = () => {
+  
+
+  // 清除单个图片选择
+  const clearSingleImage = () => {
     setSelectedImage(null);
     uploadForm.setFieldsValue({ 
       image: undefined,
@@ -547,57 +486,60 @@ const PhotosBackendManagement: React.FC = () => {
   // 渲染右侧内容
   const renderContent = () => {
     switch (selectedMenu) {
-      case 'upload-photo':
+      case 'upload-single':
         return (
-          <Card title="上传图片" className={styles.contentCard}>
+          <Card title="上传单个图片" className={styles.contentCard}>
             <Form
               form={uploadForm}
               layout="vertical"
-              onFinish={handlePhotoUpload}
+              onFinish={handleSingleUpload}
               style={{ maxWidth: 600 }}
             >
-              <Form.Item
-                name="image"
-                label="选择图片"
-                rules={[{ required: true, message: '请选择图片文件' }]}
-              >
-                <Upload
-                  beforeUpload={() => false}
-                  accept="image/*"
-                  maxCount={1}
-                  listType="picture-card"
-                  fileList={selectedImage ? [selectedImage] : []}
-                  onChange={handleImageChange}
-                  showUploadList={{
-                    showPreviewIcon: true,
-                    showRemoveIcon: true,
-                    showDownloadIcon: false,
-                  }}
-                >
-                  {!selectedImage && (
-                    <div>
-                      <PlusOutlined />
-                      <div style={{ marginTop: 8 }}>上传图片</div>
-                    </div>
-                  )}
-                </Upload>
-                {selectedImage && (
-                  <div style={{ marginTop: 8, padding: 8, background: '#f5f5f5', borderRadius: 4 }}>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>
-                      <strong>文件名:</strong> {selectedImage.name}
-                    </p>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
-                      <strong>文件大小:</strong> {(selectedImage.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
-                      <strong>文件类型:</strong> {selectedImage.type || '未知类型'}
-                    </p>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
-                      <strong>上传方式:</strong> {selectedImage.size >= 2 * 1024 * 1024 ? '大图直传S3' : '小图Base64'}
-                    </p>
-                  </div>
-                )}
-              </Form.Item>
+                             <Form.Item
+                 name="image"
+                 label="选择图片"
+                 rules={[{ required: true, message: '请选择图片文件' }]}
+               >
+                 <Upload
+                   beforeUpload={() => false}
+                   accept="image/*"
+                   maxCount={1}
+                   listType="picture-card"
+                   fileList={selectedImage ? [selectedImage] : []}
+                   onChange={handleSingleImageChange}
+                   showUploadList={{
+                     showPreviewIcon: true,
+                     showRemoveIcon: true,
+                     showDownloadIcon: false,
+                   }}
+                 >
+                   {!selectedImage && (
+                     <div>
+                       <PlusOutlined />
+                       <div style={{ marginTop: 8 }}>上传图片</div>
+                     </div>
+                   )}
+                 </Upload>
+                 {selectedImage && (
+                   <div style={{ marginTop: 8, padding: 8, background: '#f5f5f5', borderRadius: 4 }}>
+                     <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>
+                       <strong>文件名:</strong> {selectedImage.name}
+                     </p>
+                     <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
+                       <strong>本地路径:</strong> {selectedImage.originFileObj ? '已选择本地文件' : '未知路径'}
+                     </p>
+                     <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
+                       <strong>文件大小:</strong> {(selectedImage.size / 1024).toFixed(2)} KB
+                     </p>
+                     <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
+                       <strong>文件类型:</strong> {selectedImage.type || '未知类型'}
+                     </p>
+                     <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
+                       <strong>最后修改:</strong> {selectedImage.lastModified ? new Date(selectedImage.lastModified).toLocaleString() : '未知'}
+                     </p>
+                   </div>
+                 )}
+               </Form.Item>
 
               <Form.Item
                 name="alt"
@@ -655,18 +597,19 @@ const PhotosBackendManagement: React.FC = () => {
                 </Space>
               </Form.Item>
 
-              <Form.Item>
-                <Space>
-                  <Button type="primary" htmlType="submit" icon={<UploadOutlined />}>
-                    上传图片
-                  </Button>
-                  {selectedImage && (
-                    <Button onClick={clearImage} icon={<ClearOutlined />}>
-                      清除选择
-                    </Button>
-                  )}
-                </Space>
-              </Form.Item>
+                             <Form.Item>
+                 <Space>
+                   <Button type="primary" htmlType="submit" icon={<UploadOutlined />}>
+                     上传图片
+                   </Button>
+                   {selectedImage && (
+                     <Button onClick={clearSingleImage} icon={<ClearOutlined />}>
+                       清除选择
+                     </Button>
+                   )}
+
+                 </Space>
+               </Form.Item>
             </Form>
           </Card>
         );

@@ -135,9 +135,8 @@ const HomePage = () => {
                           hoverable
                           cover={
                             <div 
-                              style={{ position: 'relative', height: '200px', overflow: 'hidden', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', cursor: 'pointer' }}
+                              style={{ position: 'relative', height: '200px', overflow: 'hidden', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}
                               onContextMenu={(e) => e.preventDefault()}
-                              onClick={() => handlePhotoClick(photo.id)}
                             >
                               <Image
                                 src={photo.presigned_url}
