@@ -1,2 +1,0 @@
-# Photo_store_frontend
-Photo_store_frontend
