@@ -151,11 +151,10 @@ const PhotoDetailPage = () => {
 
   const handleAddToCart = () => {
     // 校验联系方式
-    const { name, phone, address, email } = contactInfo;
+    const { name, phone, address } = contactInfo;
     const phoneOk = /[\d\s+\-()]{7,20}/.test(phone || '');
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || '');
-    if (!name || !address || !phoneOk || !emailOk) {
-      message.error('请先填写完整且有效的联系方式（姓名、电话、地址、邮箱）');
+    if (!name || !address || !phoneOk ) {
+      message.error('请先填写完整且有效的联系方式（姓名、电话、地址）');
       return;
     }
     if (photoInfo && selectedSizeData) {
