@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Layout, Menu, Card, Upload, Button, Form, Input, InputNumber, Space, message, Modal, Table, Image, Tag, Popconfirm } from 'antd';
+import { Layout, Menu, Card, Upload, Button, Form, Input, InputNumber, Space, message, Modal, Table, Image, Tag, Popconfirm, Progress } from 'antd';
 import { UploadOutlined, EditOutlined, DeleteOutlined, PlusOutlined, HomeOutlined, PictureOutlined, ClearOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
 import { photos, Photo, PhotoSize } from '../data/photos';
@@ -27,6 +27,27 @@ const PhotosBackendManagement: React.FC = () => {
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null);
   const [editForm] = Form.useForm();
   const [uploadForm] = Form.useForm();
+  
+  // 上传进度相关状态
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState('');
+  const [uploadFileName, setUploadFileName] = useState('');
+
+  // 模拟上传进度更新
+  const simulateProgress = (callback: (progress: number) => void, duration: number = 3000) => {
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15; // 随机增加进度
+      if (progress >= 90) {
+        progress = 90; // 最多到90%，等待实际完成
+        clearInterval(interval);
+      }
+      callback(progress);
+    }, 200);
+    
+    return () => clearInterval(interval);
+  };
 
   // 从API加载真实的图片数据
   React.useEffect(() => {
@@ -185,8 +206,23 @@ const PhotosBackendManagement: React.FC = () => {
       
       console.log(`文件大小: ${fileSizeMB.toFixed(2)}MB, 使用${isLargeFile ? '大图' : '小图'}上传接口`);
 
-      // 显示上传进度
-      const loadingMessage = message.loading(`正在上传图片到AWS${isLargeFile ? '(大图直传)' : ''}...`, 0);
+      // 开始上传，显示进度条
+      setIsUploading(true);
+      setUploadProgress(0);
+      setUploadFileName(file.name);
+      setUploadStatus('准备上传...');
+      
+      // 启动进度模拟
+      const stopProgress = simulateProgress((progress) => {
+        setUploadProgress(progress);
+        if (progress < 30) {
+          setUploadStatus('正在准备文件...');
+        } else if (progress < 60) {
+          setUploadStatus('正在上传到AWS...');
+        } else if (progress < 90) {
+          setUploadStatus('正在处理图片...');
+        }
+      });
       
       try {
         let uploadResult;
@@ -225,17 +261,29 @@ const PhotosBackendManagement: React.FC = () => {
           throw new Error(uploadResult.message);
         }
 
-        // 上传成功后，自动刷新图片数据以获取真实的API数据
-        uploadForm.resetFields();
-        // 重置后重新设置默认价格
-        uploadForm.setFieldsValue({
-          smallPrice: 5,
-          mediumPrice: 10,
-          largePrice: 20
-        });
-        setSelectedImage(null); // 清空选择的图片
-        loadingMessage();
-        message.success(`图片上传成功！文件名: ${uploadResult.file_name} (${isLargeFile ? '大图直传' : '小图Base64'})`);
+        // 停止进度模拟，设置完成状态
+        stopProgress();
+        setUploadProgress(100);
+        setUploadStatus('上传完成！');
+        
+        // 延迟一下显示完成状态
+        setTimeout(() => {
+          setIsUploading(false);
+          setUploadProgress(0);
+          setUploadStatus('');
+          setUploadFileName('');
+          
+          // 上传成功后，自动刷新图片数据以获取真实的API数据
+          uploadForm.resetFields();
+          // 重置后重新设置默认价格
+          uploadForm.setFieldsValue({
+            smallPrice: 5,
+            mediumPrice: 10,
+            largePrice: 20
+          });
+          setSelectedImage(null); // 清空选择的图片
+          message.success(`图片上传成功！文件名: ${uploadResult.file_name} (${isLargeFile ? '大图直传' : '小图Base64'})`);
+        }, 1000);
         
         // 延迟1秒后自动刷新图片数据，确保后端数据已保存
         setTimeout(async () => {
@@ -294,10 +342,20 @@ const PhotosBackendManagement: React.FC = () => {
           }
         }, 1000);
       } catch (uploadError) {
-        loadingMessage();
+        // 停止进度模拟，显示错误状态
+        stopProgress();
+        setIsUploading(false);
+        setUploadProgress(0);
+        setUploadStatus('');
+        setUploadFileName('');
         throw uploadError;
       }
     } catch (error) {
+      // 确保在错误时也重置上传状态
+      setIsUploading(false);
+      setUploadProgress(0);
+      setUploadStatus('');
+      setUploadFileName('');
       message.error(`上传失败: ${error instanceof Error ? error.message : '未知错误'}`);
     }
   }, [photoList, uploadForm, selectedImage]);
@@ -735,10 +793,16 @@ const PhotosBackendManagement: React.FC = () => {
 
               <Form.Item>
                 <Space>
-                  <Button type="primary" htmlType="submit" icon={<UploadOutlined />}>
-                    上传图片
+                  <Button 
+                    type="primary" 
+                    htmlType="submit" 
+                    icon={<UploadOutlined />}
+                    loading={isUploading}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? '上传中...' : '上传图片'}
                   </Button>
-                  {selectedImage && (
+                  {selectedImage && !isUploading && (
                     <Button onClick={clearImage} icon={<ClearOutlined />}>
                       清除选择
                     </Button>
@@ -867,6 +931,42 @@ const PhotosBackendManagement: React.FC = () => {
           {renderContent()}
         </Content>
       </Layout>
+
+      {/* 上传进度模态框 */}
+      <Modal
+        title="图片上传进度"
+        open={isUploading}
+        closable={false}
+        maskClosable={false}
+        footer={null}
+        width={500}
+        centered
+      >
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ fontSize: '16px', marginBottom: '8px', color: '#1890ff' }}>
+              {uploadFileName}
+            </div>
+            <div style={{ fontSize: '14px', color: '#666' }}>
+              {uploadStatus}
+            </div>
+          </div>
+          
+          <Progress
+            percent={Math.round(uploadProgress)}
+            status={uploadProgress === 100 ? 'success' : 'active'}
+            strokeColor={{
+              '0%': '#108ee9',
+              '100%': '#87d068',
+            }}
+            style={{ marginBottom: '20px' }}
+          />
+          
+          <div style={{ fontSize: '12px', color: '#999' }}>
+            {uploadProgress < 100 ? '请耐心等待，不要关闭页面...' : '上传完成！'}
+          </div>
+        </div>
+      </Modal>
 
       {/* 编辑模态框 */}
       <Modal
