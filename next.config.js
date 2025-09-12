@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // reactStrictMode: true,
+  reactStrictMode: true,
+  swcMinify: true,
+  output: 'export',
+  trailingSlash: true,
+  distDir: 'out',
   images: {
     domains: [
       'zsbtest.s3.amazonaws.com',
@@ -20,6 +24,20 @@ const nextConfig = {
         pathname: '/**',
       }
     ],
+  },
+  experimental: {
+    esmExternals: 'loose',
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    return config;
   },
 };
 
