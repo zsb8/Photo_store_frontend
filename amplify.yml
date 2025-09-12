@@ -3,16 +3,16 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "!!! ----node version: $(node -v)"
-        - node -v
-        - echo "!!! ----npm version: $(npm -v)"
-        - npm -v
-        - echo "Installing dependencies..."
-        - npm ci
+        - "echo '!!! node version $(node -v)'"
+        - "node -v"
+        - "echo '!!! npm version $(npm -v)'"
+        - "npm -v"
+        - "echo 'Installing dependencies...'"
+        - "npm ci"
     build:
       commands:
-        - echo "Building the app..."
-        - npm run build
+        - "echo 'Building the app...'"
+        - "npm run build"
   artifacts:
     baseDirectory: out
     files:
