@@ -369,21 +369,18 @@ const PhotoDetailPage = () => {
                   >
                     <Row gutter={8}>
                       <Col span={12}>
-                        <Form.Item label={<span style={{ fontSize: 12 }}>姓名</span>} name="name" rules={[{ required: true, message: '请输入姓名' }]} style={{ marginBottom: 8 }}> 
+                        <Form.Item label={<span style={{ fontSize: 12 }}>收件姓名</span>} name="name" rules={[{ required: true, message: '请输入姓名' }]} style={{ marginBottom: 8 }}> 
                           <Input placeholder="请输入收件人姓名" size="small" />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item label={<span style={{ fontSize: 12 }}>电话</span>} name="phone" rules={[{ required: true, message: '请输入电话' }]} style={{ marginBottom: 8 }}> 
+                        <Form.Item label={<span style={{ fontSize: 12 }}>收件电话</span>} name="phone" rules={[{ required: true, message: '请输入电话' }]} style={{ marginBottom: 8 }}> 
                           <Input placeholder="用于快递联系，如 +1 450-456-7890" size="small" />
                         </Form.Item>
                       </Col>
                     </Row>
                     <Form.Item label={<span style={{ fontSize: 12 }}>邮寄地址</span>} name="address" rules={[{ required: true, message: '请输入邮寄地址' }]} style={{ marginBottom: 8 }}> 
                       <Input placeholder="街道、城市、省、邮编" size="small" />
-                    </Form.Item>
-                    <Form.Item label={<span style={{ fontSize: 12 }}>电子邮箱</span>} name="email" rules={[{ required: true, type: 'email', message: '请输入有效邮箱' }]} style={{ marginBottom: 8 }}> 
-                      <Input placeholder="用于接收通知和电子收据" size="small" />
                     </Form.Item>
                   </Form>
 

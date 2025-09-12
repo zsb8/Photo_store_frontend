@@ -730,4 +730,75 @@ interface AllPhotoSettingsResponse {
     count: number;
 }
 
+// 删除图片接口类型定义
+interface DeletePhotoRequest {
+    id: string;
+}
+
+interface DeletePhotoResponse {
+    message: string;
+    result: string;
+}
+
+/**
+ * 从DynamoDB和S3删除图片
+ * @param recordId - 图片记录ID
+ * @returns Promise<DeletePhotoResponse>
+ */
+export async function delete_photo_from_dynamodb_s3(recordId: string): Promise<DeletePhotoResponse> {
+    const deleteUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/delete_photo_from_dynamodb_s3`;
+    
+    console.log("!!!!=====delete_photo_from_dynamodb_s3 START");
+    console.log("Delete URL:", deleteUrl);
+    console.log("Record ID:", recordId);
+    
+    try {
+        const requestData: DeletePhotoRequest = {
+            id: recordId
+        };
+        
+        const requestParams = preparePostRequest(JSON.stringify(requestData));
+        
+        console.log("Request parameters:", requestParams);
+        console.log("Request data:", requestData);
+        console.log("Making POST request to:", deleteUrl);
+        
+        const response = await fetch(deleteUrl, requestParams);
+        console.log("Response received:", response);
+        console.log("Response status:", response.status);
+        console.log("Response status text:", response.statusText);
+        
+        const result = await response.json();
+        console.log("Response JSON parsed:", result);
+        console.log("Result type:", typeof result);
+        console.log("Result keys:", Object.keys(result));
+        
+        if (!response.ok) {
+            console.error("HTTP error occurred:", response.status, response.statusText);
+            console.error("Error response body:", result);
+            throw new Error(result.message || `HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        if (result.error) {
+            console.error("API error in response:", result.error);
+            throw new Error(result.message || result.error);
+        }
+        
+        console.log("Returning response data:", result);
+        console.log("!!!!=====delete_photo_from_dynamodb_s3 SUCCESS");
+        
+        return {
+            message: result.message || "删除成功",
+            result: result.result || "删除完成"
+        };
+    } catch (error) {
+        console.error('!!!!=====delete_photo_from_dynamodb_s3 ERROR');
+        console.error('Error type:', typeof error);
+        console.error('Error message:', error instanceof Error ? error.message : error);
+        console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+        
+        throw new Error(error instanceof Error ? error.message : '删除图片失败');
+    }
+}
+
 

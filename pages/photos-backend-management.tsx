@@ -3,7 +3,7 @@ import { Layout, Menu, Card, Upload, Button, Form, Input, InputNumber, Space, me
 import { UploadOutlined, EditOutlined, DeleteOutlined, PlusOutlined, HomeOutlined, PictureOutlined, ClearOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
 import { photos, Photo, PhotoSize } from '../data/photos';
-import { upload_photo, fileToBase64, get_all_photo_settings, get_photos_presigned_url, save_photo_settings, upload_bigphoto } from '../util/aws-api';
+import { upload_photo, fileToBase64, get_all_photo_settings, get_photos_presigned_url, save_photo_settings, upload_bigphoto, delete_photo_from_dynamodb_s3 } from '../util/aws-api';
 import styles from '../styles/photos-backend-management.module.css';
 
 const { Header, Sider, Content } = Layout;
@@ -135,6 +135,11 @@ const PhotosBackendManagement: React.FC = () => {
       icon: <EditOutlined />,
       label: '编辑图片信息',
     },
+    {
+      key: 'view-orders',
+      icon: <EditOutlined />,
+      label: '查看订单',
+    },    
     {
       key: 'home',
       icon: <HomeOutlined />,
@@ -405,9 +410,82 @@ const PhotosBackendManagement: React.FC = () => {
   };
 
   // 删除图片
-  const handleDeletePhoto = (photoId: number) => {
-    setPhotoList(prev => prev.filter(photo => photo.id !== photoId));
-    message.success('图片删除成功！');
+  const handleDeletePhoto = async (photoId: number) => {
+    try {
+      // 显示删除进度
+      const loadingMessage = message.loading('正在删除图片...', 0);
+      
+      // 调用 delete_photo_from_dynamodb_s3 API 删除图片
+      const deleteResult = await delete_photo_from_dynamodb_s3(photoId.toString());
+      
+      // 从本地状态中移除图片
+      setPhotoList(prev => prev.filter(photo => photo.id !== photoId));
+      
+      loadingMessage();
+      message.success(`图片删除成功！${deleteResult.result}`);
+      
+      // 延迟1秒后自动刷新图片数据，确保删除操作完成
+      setTimeout(async () => {
+        try {
+          message.loading('正在刷新图片数据...', 0);
+          
+          // 获取所有图片设置信息
+          const photoSettingsResponse = await get_all_photo_settings();
+          console.log('Photo settings response after delete:', photoSettingsResponse);
+          
+          if (photoSettingsResponse.data && photoSettingsResponse.data.length > 0) {
+            // 获取图片画廊数据（包含预授权链接）
+            const galleryResponse = await get_photos_presigned_url();
+            console.log('Gallery response after delete:', galleryResponse);
+            
+            // 创建图片ID到预授权链接的映射
+            const presignedUrlMap = new Map<string, string>();
+            if (galleryResponse.data) {
+              galleryResponse.data.forEach((item: any) => {
+                presignedUrlMap.set(item.id, item.presigned_url);
+              });
+            }
+            
+            // 转换数据格式以匹配 Photo 接口
+            const convertedPhotos: Photo[] = photoSettingsResponse.data.map((item: any, index: number) => {
+              // 从价格信息中提取价格值
+              const smallPrice = item.prices?.small?.S ? parseFloat(item.prices.small.S) : 5;
+              const mediumPrice = item.prices?.medium?.S ? parseFloat(item.prices.medium.S) : 10;
+              const largePrice = item.prices?.large?.S ? parseFloat(item.prices.large.S) : 20;
+              
+              return {
+                id: item.id || `photo_${index}`, // 使用API返回的真实ID
+                uniqueId: item.id || `photo_${index}`,
+                src: presignedUrlMap.get(item.id) || item.s3_newsize_path || `/placeholder-${index + 1}.jpg`,
+                alt: item.title || item.filename || `Photo ${index + 1}`,
+                sizes: [
+                  { size: 'small', label: '小图片', price: smallPrice },
+                  { size: 'medium', label: '中图片', price: mediumPrice },
+                  { size: 'large', label: '大图片', price: largePrice }
+                ],
+                description: item.description || '暂无描述'
+              };
+            });
+            
+            setPhotoList(convertedPhotos);
+            message.destroy();
+            console.log('Refreshed photo data after delete:', convertedPhotos);
+          } else {
+            message.destroy();
+            setPhotoList([]);
+            message.info('所有图片已删除');
+          }
+        } catch (error) {
+          message.destroy();
+          console.error('Error refreshing photo data after delete:', error);
+          message.error(`刷新图片数据失败: ${error instanceof Error ? error.message : '未知错误'}`);
+        }
+      }, 1000);
+      
+    } catch (error) {
+      message.error(`删除失败: ${error instanceof Error ? error.message : '未知错误'}`);
+      console.error('Error deleting photo:', error);
+    }
   };
 
   // 处理图片选择变化
