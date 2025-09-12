@@ -4,7 +4,6 @@ const nextConfig = {
   swcMinify: true,
   output: 'export',
   trailingSlash: true,
-  distDir: 'out',
   images: {
     domains: [
       'zsbtest.s3.amazonaws.com',
