@@ -14,7 +14,15 @@
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@hookform/resolvers": "^2.9.11",
+    "@mui/icons-material": "^5.11.9",
+    "@mui/material": "^5.11.9",
+    "@stripe/stripe-js": "^7.8.0",
+    "@types/node": "18.11.19",
+    "@types/uuid": "^9.0.2",
     "antd": "^5.4.0",
+    "date-fns": "^2.29.3",
+    "dotenv": "^16.0.3",
+    "file-saver": "^2.0.5",
     "next": "13.4.6",
     "react": "18.2.0",
     "react-dnd": "^16.0.1",
@@ -25,7 +33,11 @@
     "react-responsive": "^9.0.0",
     "react-router": "^6.8.1",
     "react-router-dom": "^6.8.1",
-    "typescript": "4.9.5"
+    "sass": "^1.60.0",
+    "stripe": "^18.4.0",
+    "typescript": "4.9.5",
+    "uuid": "^9.0.0",
+    "yup": "^1.0.0"
   },
   "engines": {
     "node": "20.x"
