@@ -1,21 +1,8 @@
-type HomePageProps = {
-  now: string;
-};
-
-const HomePage = ({ now }: HomePageProps) => {
+const HomePage = () => {
   return (
     <>
-      SSR time: {now}
+      11111111111111111111111
     </>
   );
 };
-
-export async function getServerSideProps() {
-  return {
-    props: {
-      now: new Date().toISOString(),
-    },
-  };
-}
-
 export default HomePage;
