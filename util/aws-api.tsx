@@ -553,14 +553,16 @@ interface PhotoInfoResponse {
  * @returns Promise<PhotoInfoResponse>
  */
 export async function get_photo_info(photoId: string): Promise<PhotoInfoResponse> {
-    const photoInfoUrl = `/api/photo-info`;
+    const photoInfoUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/photo_info`;
     
     console.log("!!!!=====get_photo_info START");
     console.log("Photo Info URL:", photoInfoUrl);
     console.log("Photo ID:", photoId);
     
     try {
-        const requestData: PhotoInfoRequest = { id: photoId };
+        const requestData: PhotoInfoRequest = {
+            id: photoId
+        };
         
         const requestParams = {
             method: "POST",

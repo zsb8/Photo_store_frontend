@@ -27,6 +27,10 @@ const HomePage = () => {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const foo = process.env.NEXT_PUBLIC_FOO ?? '';
+  console.log('!!!!!!!!=======foo:', foo);
+
+
   // 获取图片数据
   useEffect(() => {
     const fetchPhotos = async () => {
