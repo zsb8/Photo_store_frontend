@@ -4,11 +4,12 @@ import { secret } from '@aws-amplify/backend';
 
 const SKTEST = secret('SKTEST')
 console.log('!!!!!!========Has SKTEST secret?', !!SKTEST);
-
+console.log('!!!!!!========typeof?', typeof SKTEST);
+console.log('!!!!!!========toString?', SKTEST.toString?.());
 // const stripe = new Stripe('sk_test_Hrs6SAopgFPF0bZXSN3f6ELN', {
 //   apiVersion: '2025-08-27.basil',
 // });
-const stripe = new Stripe(secret('SKTEST') as unknown as string, {
+const stripe = new Stripe(secret('SKTEST').toString(), {
   apiVersion: '2025-08-27.basil',
 });
 
