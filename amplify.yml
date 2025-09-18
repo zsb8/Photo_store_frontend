@@ -13,7 +13,9 @@ frontend:
         - "npm ci"
     build:
       commands:
-        - "echo 'NEXT_PUBLIC_FOO=$NEXT_PUBLIC_FOO' >> .env"
+        - 'rm -f .env'
+        - 'echo "!!!!!!! Amplify sees NEXT_PUBLIC_FOO_ZSB=$NEXT_PUBLIC_FOO"'
+        - 'echo "NEXT_PUBLIC_FOO_ZSB=$NEXT_PUBLIC_FOO" > .env'
         - "echo 'Building the app...'"
         - "npm run build"
         - "echo 'Creating standalone build for Amplify...'"
