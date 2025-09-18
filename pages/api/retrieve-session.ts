@@ -1,9 +1,17 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
+import { secret } from '@aws-amplify/backend';
 
-const stripe = new Stripe('sk_test_Hrs6SAopgFPF0bZXSN3f6ELN', {
+const SKTEST = secret('SKTEST')
+console.log('!!!!!!========Has SKTEST secret?', !!SKTEST);
+
+// const stripe = new Stripe('sk_test_Hrs6SAopgFPF0bZXSN3f6ELN', {
+//   apiVersion: '2025-08-27.basil',
+// });
+const stripe = new Stripe(secret('SKTEST') as unknown as string, {
   apiVersion: '2025-08-27.basil',
 });
+
 
 export default async function handler(
   req: NextApiRequest,
