@@ -14,6 +14,8 @@ frontend:
     build:
       commands:
         - "echo 'Building the app...'"
+        - "echo 'Writing env vars to .env'"
+        - "if [ -n \"$foo\" ]; then echo \"foo=$foo\" >> .env; fi"
         - "npm run build"
         - "echo 'Creating standalone build for Amplify...'"
         - "npx next build"

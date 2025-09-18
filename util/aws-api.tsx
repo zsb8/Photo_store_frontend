@@ -1,5 +1,4 @@
 import { prepareGetRequest, preparePostRequest } from "@/util/request-helper";
-import { secret } from '@aws-amplify/backend';
 const urlprefix = "ji4ct5zze5";
 // 图片上传接口类型定义
 interface UploadPhotoRequest {
@@ -554,18 +553,14 @@ interface PhotoInfoResponse {
  * @returns Promise<PhotoInfoResponse>
  */
 export async function get_photo_info(photoId: string): Promise<PhotoInfoResponse> {
-    const foo = secret('foo')
-    console.log("!!!!=====foo", foo);
-    const photoInfoUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/photo_info`;
+    const photoInfoUrl = `/api/photo-info`;
     
     console.log("!!!!=====get_photo_info START");
     console.log("Photo Info URL:", photoInfoUrl);
     console.log("Photo ID:", photoId);
     
     try {
-        const requestData: PhotoInfoRequest = {
-            id: photoId
-        };
+        const requestData: PhotoInfoRequest = { id: photoId };
         
         const requestParams = {
             method: "POST",
