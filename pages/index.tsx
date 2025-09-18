@@ -27,9 +27,6 @@ const HomePage = () => {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const foo = process.env.NEXT_PUBLIC_FOO_ZSB ?? '';
-  console.log('!!!!!!!!=======foo:', foo);
-
 
   // 获取图片数据
   useEffect(() => {
@@ -123,7 +120,7 @@ const HomePage = () => {
               textAlign: 'center',
               flex: '1 1 auto'
             }}>
-              精美照片销售={foo}
+              精美照片销售
             </Title>
             <ShoppingCart 
               items={cartItems}

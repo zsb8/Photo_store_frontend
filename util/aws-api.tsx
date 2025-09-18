@@ -1,5 +1,5 @@
 import { prepareGetRequest, preparePostRequest } from "@/util/request-helper";
-const urlprefix = "ji4ct5zze5";
+const urlprefix = process.env.NEXT_PUBLIC_URLPREFIX ?? "";
 // 图片上传接口类型定义
 interface UploadPhotoRequest {
     photo_data: string;  // Base64编码的图片数据
