@@ -47,6 +47,11 @@ const PhotoDetailPage = () => {
     address: '',
     email: ''
   });
+  const [contactValidation, setContactValidation] = useState({
+    name: false,
+    phone: false,
+    address: false
+  });
 
   // 获取图片详细信息
   useEffect(() => {
@@ -93,6 +98,18 @@ const PhotoDetailPage = () => {
 
   const handleContactChange = (changed: any, all: any) => {
     setContactInfo(all);
+    
+    // 实时验证联系信息
+    const nameOk = all.name && all.name.trim().length >= 2;
+    const phoneOk = all.phone && all.phone.trim().length >= 7 && /^[\d\s+\-().]{7,25}$/.test(all.phone.trim());
+    const addressOk = all.address && all.address.trim().length >= 5;
+    
+    setContactValidation({
+      name: nameOk,
+      phone: phoneOk,
+      address: addressOk
+    });
+    
     try { localStorage.setItem('contact_info', JSON.stringify(all)); } catch {}
   };
 
@@ -152,9 +169,24 @@ const PhotoDetailPage = () => {
   const handleAddToCart = () => {
     // 校验联系方式
     const { name, phone, address } = contactInfo;
-    const phoneOk = /[\d\s+\-()]{7,20}/.test(phone || '');
-    if (!name || !address || !phoneOk ) {
-      message.error('请先填写完整且有效的联系方式（姓名、电话、地址）');
+    
+    // 更宽松的电话号码验证：允许数字、空格、+、-、()、.等常见字符
+    const phoneOk = phone && phone.trim().length >= 7 && /^[\d\s+\-().]{7,25}$/.test(phone.trim());
+    
+    // 检查姓名是否有效（至少2个字符，不全是空格）
+    const nameOk = name && name.trim().length >= 2;
+    
+    // 检查地址是否有效（至少5个字符，不全是空格）
+    const addressOk = address && address.trim().length >= 5;
+    
+    if (!nameOk || !addressOk || !phoneOk) {
+      let errorMsg = '请先填写完整且有效的联系方式：';
+      const errors = [];
+      if (!nameOk) errors.push('姓名（至少2个字符）');
+      if (!phoneOk) errors.push('电话（7-25位数字和符号）');
+      if (!addressOk) errors.push('地址（至少5个字符）');
+      errorMsg += errors.join('、');
+      message.error(errorMsg);
       return;
     }
     if (photoInfo && selectedSizeData) {
@@ -368,20 +400,93 @@ const PhotoDetailPage = () => {
                   >
                     <Row gutter={8}>
                       <Col span={12}>
-                        <Form.Item label={<span style={{ fontSize: 12 }}>收件姓名</span>} name="name" rules={[{ required: true, message: '请输入姓名' }]} style={{ marginBottom: 8 }}> 
+                        <Form.Item 
+                          label={<span style={{ fontSize: 12 }}>收件姓名</span>} 
+                          name="name" 
+                          rules={[
+                            { required: true, message: '请输入姓名' },
+                            { min: 2, message: '姓名至少2个字符' },
+                            { 
+                              validator: (_, value) => {
+                                if (value && value.trim().length < 2) {
+                                  return Promise.reject(new Error('姓名不能全是空格'));
+                                }
+                                return Promise.resolve();
+                              }
+                            }
+                          ]} 
+                          style={{ marginBottom: 8 }}
+                        > 
                           <Input placeholder="请输入收件人姓名" size="small" />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item label={<span style={{ fontSize: 12 }}>收件电话</span>} name="phone" rules={[{ required: true, message: '请输入电话' }]} style={{ marginBottom: 8 }}> 
-                          <Input placeholder="用于快递联系，如 +1 450-456-7890" size="small" />
+                        <Form.Item 
+                          label={<span style={{ fontSize: 12 }}>收件电话</span>} 
+                          name="phone" 
+                          rules={[
+                            { required: true, message: '请输入电话' },
+                            { min: 7, message: '电话至少7位' },
+                            { 
+                              validator: (_, value) => {
+                                if (value && !/^[\d\s+\-().]{7,25}$/.test(value.trim())) {
+                                  return Promise.reject(new Error('请输入有效的电话号码'));
+                                }
+                                return Promise.resolve();
+                              }
+                            }
+                          ]} 
+                          style={{ marginBottom: 8 }}
+                        > 
+                          <Input placeholder="如：+1 450-456-7890 或 4504567890" size="small" />
                         </Form.Item>
                       </Col>
                     </Row>
-                    <Form.Item label={<span style={{ fontSize: 12 }}>邮寄地址</span>} name="address" rules={[{ required: true, message: '请输入邮寄地址' }]} style={{ marginBottom: 8 }}> 
+                    <Form.Item 
+                      label={<span style={{ fontSize: 12 }}>邮寄地址</span>} 
+                      name="address" 
+                      rules={[
+                        { required: true, message: '请输入邮寄地址' },
+                        { min: 5, message: '地址至少5个字符' },
+                        { 
+                          validator: (_, value) => {
+                            if (value && value.trim().length < 5) {
+                              return Promise.reject(new Error('地址不能全是空格'));
+                            }
+                            return Promise.resolve();
+                          }
+                        }
+                      ]} 
+                      style={{ marginBottom: 8 }}
+                    > 
                       <Input placeholder="街道、城市、省、邮编" size="small" />
                     </Form.Item>
                   </Form>
+
+                  {/* 验证状态提示 */}
+                  <div style={{ 
+                    marginBottom: '10px', 
+                    padding: '8px', 
+                    background: '#f6ffed', 
+                    border: '1px solid #b7eb8f', 
+                    borderRadius: '6px',
+                    fontSize: '12px'
+                  }}>
+                    <div style={{ marginBottom: '4px', fontWeight: 'bold', color: '#52c41a' }}>
+                      联系信息状态：
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      <span style={{ color: contactValidation.name ? '#52c41a' : '#ff4d4f' }}>
+                        {contactValidation.name ? '✓' : '✗'} 姓名
+                      </span>
+                      <span style={{ color: contactValidation.phone ? '#52c41a' : '#ff4d4f' }}>
+                        {contactValidation.phone ? '✓' : '✗'} 电话
+                      </span>
+                      <span style={{ color: contactValidation.address ? '#52c41a' : '#ff4d4f' }}>
+                        {contactValidation.address ? '✓' : '✗'} 地址
+                      </span>
+                    </div>
+                  </div>
 
                   {/* 购买按钮 */}
                   <Button
