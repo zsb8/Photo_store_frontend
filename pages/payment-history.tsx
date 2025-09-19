@@ -3,6 +3,7 @@ import { Card, Table, Tag, Typography, Button, Space, DatePicker, Select, Input,
 import { SearchOutlined, ReloadOutlined, EyeOutlined, DownloadOutlined, HomeOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { RouteGuard } from '../components/route-guard';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -188,7 +189,7 @@ const PaymentHistoryPage: React.FC = () => {
   });
 
   return (
-    <>
+    <RouteGuard>
       <Head>
                  <title>支付历史 - Purchase Photo</title>
         <meta name="description" content="查看支付历史记录" />
@@ -329,7 +330,7 @@ const PaymentHistoryPage: React.FC = () => {
           />
         </Card>
       </div>
-    </>
+    </RouteGuard>
   );
 };
 

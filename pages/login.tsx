@@ -63,21 +63,9 @@ export default function Login() {
           localStorage.setItem('cartTotal', preservedCartTotal);
         }
         
-        // 检查是否有购物车数据
-        if (typeof window !== 'undefined') {
-          const cartItems = localStorage.getItem('cartItems');
-          const cartTotal = localStorage.getItem('cartTotal');
-          
-          if (cartItems && cartTotal) {
-            // 如果有购物车数据，跳转到购买页面
-            router.push("/purchase-photo");
-          } else {
-            // 否则跳转到首页
-            router.push("/home");
-          }
-        } else {
-          router.push("/home");
-        }
+        // 登录成功后跳转到来源页（如有），否则跳首页
+        const returnUrl = (router.query.returnUrl as string) || "/home";
+        router.push(returnUrl);
       })
       .catch((error) => {
         setLoading(false);

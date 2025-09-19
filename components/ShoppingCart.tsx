@@ -96,8 +96,8 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
       localStorage.setItem('cartTotal', unpurchasedItems.reduce((sum, item) => sum + item.price, 0).toString());
     }
     
-    // 跳转到登录页面
-    router.push('/login');
+    // 直接跳转到购买页面，跳过登录
+    router.push('/purchase-photo');
   };
 
   const formatPrice = (price: number) => {

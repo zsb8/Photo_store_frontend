@@ -1,13 +1,17 @@
-import React, { useState, useCallback } from 'react';
-import { Layout, Menu, Card, Upload, Button, Form, Input, InputNumber, Space, message, Modal, Table, Image, Tag, Popconfirm } from 'antd';
-import { UploadOutlined, EditOutlined, DeleteOutlined, PlusOutlined, HomeOutlined, PictureOutlined, ClearOutlined } from '@ant-design/icons';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Layout, Menu, Card, Upload, Button, Form, Input, InputNumber, Space, message, Modal, Table, Image, Tag, Popconfirm, DatePicker, Select, Typography } from 'antd';
+import { UploadOutlined, EditOutlined, DeleteOutlined, PlusOutlined, HomeOutlined, PictureOutlined, ClearOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
 import { photos, Photo, PhotoSize } from '../data/photos';
 import { upload_photo, fileToBase64, get_all_photo_settings, get_photos_presigned_url, save_photo_settings, upload_bigphoto, delete_photo_from_dynamodb_s3 } from '../util/aws-api';
 import styles from '../styles/photos-backend-management.module.css';
+import { RouteGuard } from '../components/route-guard';
 
 const { Header, Sider, Content } = Layout;
 const { TextArea } = Input;
+const { Title, Text } = Typography;
+const { RangePicker } = DatePicker;
+const { Option } = Select;
 
 interface PhotoFormData {
   alt: string;
@@ -17,6 +21,16 @@ interface PhotoFormData {
     medium: number;
     large: number;
   };
+}
+
+interface PaymentRecord {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  description: string;
+  created: number;
+  customer_email?: string;
 }
 
 const PhotosBackendManagement: React.FC = () => {
@@ -30,6 +44,13 @@ const PhotosBackendManagement: React.FC = () => {
   
   // 上传状态
   const [isUploading, setIsUploading] = useState(false);
+
+  // 订单相关状态
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dateRange, setDateRange] = useState<[string, string] | null>(null);
 
   // 从API加载真实的图片数据
   React.useEffect(() => {
@@ -123,6 +144,33 @@ const PhotosBackendManagement: React.FC = () => {
       largePrice: 20
     });
   }, [uploadForm]);
+
+  // 加载支付记录
+  const loadPayments = useCallback(async () => {
+    setPaymentsLoading(true);
+    try {
+      const response = await fetch('/api/payment-history?limit=100');
+      const data = await response.json();
+      
+      if (response.ok) {
+        setPayments(data.sessions || []);
+      } else {
+        message.error('加载支付记录失败');
+      }
+    } catch (error) {
+      console.error('Error loading payments:', error);
+      message.error('加载支付记录失败');
+    } finally {
+      setPaymentsLoading(false);
+    }
+  }, []);
+
+  // 当选择查看订单菜单时加载数据
+  useEffect(() => {
+    if (selectedMenu === 'view-orders') {
+      loadPayments();
+    }
+  }, [selectedMenu, loadPayments]);
   const [selectedImage, setSelectedImage] = useState<any>(null);
   
 
@@ -153,6 +201,16 @@ const PhotosBackendManagement: React.FC = () => {
   // 处理菜单点击
   const handleMenuClick = (key: string) => {
     if (key === 'home') {
+      // 清除会话并返回主页
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('id_token');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('session_time');
+        localStorage.removeItem('username');
+        localStorage.removeItem('tenant_id');
+        localStorage.removeItem('role');
+        localStorage.removeItem('user_name');
+      }
       router.push('/');
       return;
     }
@@ -522,9 +580,93 @@ const PhotosBackendManagement: React.FC = () => {
     });
   };
 
+  // 支付记录相关函数
+  const formatAmount = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+    }).format(amount / 100);
+  };
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp * 1000).toLocaleString('zh-CN');
+  };
+
+  const getStatusTag = (status: string) => {
+    const config = {
+      paid: { color: 'green', text: '已支付' },
+      pending: { color: 'orange', text: '处理中' },
+      failed: { color: 'red', text: '失败' },
+      canceled: { color: 'gray', text: '已取消' },
+    };
+    const statusConfig = config[status as keyof typeof config] || { color: 'default', text: status };
+    return <Tag color={statusConfig.color}>{statusConfig.text}</Tag>;
+  };
+
   
 
-  // 表格列配置
+  // 筛选支付记录
+  const filteredPayments = payments.filter(payment => {
+    const matchesSearch = !searchText || 
+      payment.id.toLowerCase().includes(searchText.toLowerCase()) ||
+      payment.description.toLowerCase().includes(searchText.toLowerCase()) ||
+      (payment.customer_email && payment.customer_email.toLowerCase().includes(searchText.toLowerCase()));
+    
+    const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
+    
+    const matchesDate = !dateRange || (
+      payment.created >= new Date(dateRange[0]).getTime() / 1000 &&
+      payment.created <= new Date(dateRange[1]).getTime() / 1000
+    );
+    
+    return matchesSearch && matchesStatus && matchesDate;
+  });
+
+  
+
+  // 支付记录表格列配置
+  const paymentColumns = [
+    {
+      title: '订单ID',
+      dataIndex: 'id',
+      key: 'id',
+      render: (id: string) => <Text code>{id}</Text>,
+    },
+    {
+      title: '金额',
+      dataIndex: 'amount',
+      key: 'amount',
+      render: (amount: number, record: PaymentRecord) => (
+        <Text strong>{formatAmount(amount, record.currency)}</Text>
+      ),
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => getStatusTag(status),
+    },
+    {
+      title: '描述',
+      dataIndex: 'description',
+      key: 'description',
+    },
+    {
+      title: '客户邮箱',
+      dataIndex: 'customer_email',
+      key: 'customer_email',
+      render: (email: string) => email || '-',
+    },
+    {
+      title: '支付时间',
+      dataIndex: 'created',
+      key: 'created',
+      render: (created: number) => formatDate(created),
+    },
+    
+  ];
+
+  // 图片管理表格列配置
   const columns = [
          {
        title: '预览',
@@ -849,6 +991,112 @@ const PhotosBackendManagement: React.FC = () => {
           </Card>
         );
 
+      case 'view-orders':
+        return (
+          <Card title="查看订单" className={styles.contentCard}>
+            {/* 搜索和筛选区域 */}
+            <div style={{ marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <Input
+                placeholder="搜索订单ID、描述或邮箱"
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={{ width: 300 }}
+              />
+              <Select
+                value={statusFilter}
+                onChange={setStatusFilter}
+                style={{ width: 120 }}
+              >
+                <Option value="all">全部状态</Option>
+                <Option value="paid">已支付</Option>
+                <Option value="pending">处理中</Option>
+                <Option value="failed">失败</Option>
+                <Option value="canceled">已取消</Option>
+              </Select>
+              <RangePicker
+                onChange={(dates) => {
+                  if (dates && dates[0] && dates[1]) {
+                    setDateRange([dates[0].format('YYYY-MM-DD'), dates[1].format('YYYY-MM-DD')]);
+                  } else {
+                    setDateRange(null);
+                  }
+                }}
+                placeholder={['开始日期', '结束日期']}
+              />
+              <Button 
+                icon={<ReloadOutlined />}
+                onClick={loadPayments}
+                loading={paymentsLoading}
+              >
+                刷新
+              </Button>
+            </div>
+
+            {/* 统计信息 */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+              gap: '16px', 
+              marginBottom: '24px' 
+            }}>
+              <Card size="small">
+                <div style={{ textAlign: 'center' }}>
+                  <Title level={4} style={{ margin: 0, color: '#52c41a' }}>
+                    {payments.filter(p => p.status === 'paid').length}
+                  </Title>
+                  <Text type="secondary">成功支付</Text>
+                </div>
+              </Card>
+              <Card size="small">
+                <div style={{ textAlign: 'center' }}>
+                  <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
+                    {formatAmount(
+                      payments
+                        .filter(p => p.status === 'paid')
+                        .reduce((sum, p) => sum + p.amount, 0),
+                      'usd'
+                    )}
+                  </Title>
+                  <Text type="secondary">总支付金额</Text>
+                </div>
+              </Card>
+              <Card size="small">
+                <div style={{ textAlign: 'center' }}>
+                  <Title level={4} style={{ margin: 0, color: '#faad14' }}>
+                    {payments.filter(p => p.status === 'pending').length}
+                  </Title>
+                  <Text type="secondary">处理中</Text>
+                </div>
+              </Card>
+              <Card size="small">
+                <div style={{ textAlign: 'center' }}>
+                  <Title level={4} style={{ margin: 0, color: '#666' }}>
+                    {filteredPayments.length}
+                  </Title>
+                  <Text type="secondary">当前显示</Text>
+                </div>
+              </Card>
+            </div>
+
+            {/* 支付记录表格 */}
+            <Table
+              columns={paymentColumns}
+              dataSource={filteredPayments}
+              rowKey="id"
+              loading={paymentsLoading}
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) => 
+                  `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
+              }}
+              scroll={{ x: 1000 }}
+            />
+          </Card>
+        );
+
       default:
         return (
           <Card title="欢迎使用后台管理系统" className={styles.contentCard}>
@@ -859,115 +1107,117 @@ const PhotosBackendManagement: React.FC = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Header className={styles.header}>
-        <div className={styles.headerContent}>
-          <PictureOutlined className={styles.logo} />
-          <h1 className={styles.title}>照片商店后台管理系统</h1>
-        </div>
-      </Header>
-      
-      <Layout>
-        <Sider width={250} className={styles.sider}>
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedMenu]}
-            items={menuItems}
-            onClick={({ key }) => handleMenuClick(key)}
-            className={styles.menu}
-          />
-        </Sider>
+    <RouteGuard>
+      <Layout style={{ minHeight: '100vh' }}>
+        <Header className={styles.header}>
+          <div className={styles.headerContent}>
+            <PictureOutlined className={styles.logo} />
+            <h1 className={styles.title}>照片商店后台管理系统</h1>
+          </div>
+        </Header>
         
-        <Content className={styles.content}>
-          {renderContent()}
-        </Content>
-      </Layout>
+        <Layout>
+          <Sider width={250} className={styles.sider}>
+            <Menu
+              mode="inline"
+              selectedKeys={[selectedMenu]}
+              items={menuItems}
+              onClick={({ key }) => handleMenuClick(key)}
+              className={styles.menu}
+            />
+          </Sider>
+          
+          <Content className={styles.content}>
+            {renderContent()}
+          </Content>
+        </Layout>
 
-      {/* 编辑模态框 */}
-      <Modal
-        title="编辑图片信息"
-        open={isEditModalVisible}
-        onCancel={() => {
-          setIsEditModalVisible(false);
-          setEditingPhoto(null);
-        }}
-        footer={null}
-        width={600}
-      >
-        <Form
-          form={editForm}
-          layout="vertical"
-          onFinish={handleEditSave}
+        {/* 编辑模态框 */}
+        <Modal
+          title="编辑图片信息"
+          open={isEditModalVisible}
+          onCancel={() => {
+            setIsEditModalVisible(false);
+            setEditingPhoto(null);
+          }}
+          footer={null}
+          width={600}
         >
-          <Form.Item
-            name="alt"
-            label="图片标题"
-            rules={[{ required: true, message: '请输入图片标题' }]}
+          <Form
+            form={editForm}
+            layout="vertical"
+            onFinish={handleEditSave}
           >
-            <Input placeholder="请输入图片标题" />
-          </Form.Item>
+            <Form.Item
+              name="alt"
+              label="图片标题"
+              rules={[{ required: true, message: '请输入图片标题' }]}
+            >
+              <Input placeholder="请输入图片标题" />
+            </Form.Item>
 
-          <Form.Item
-            name="description"
-            label="图片描述"
-          >
-            <TextArea rows={4} placeholder="请输入图片描述" />
-          </Form.Item>
+            <Form.Item
+              name="description"
+              label="图片描述"
+            >
+              <TextArea rows={4} placeholder="请输入图片描述" />
+            </Form.Item>
 
-          <Form.Item label="价格设置">
-            <Space>
-              <Form.Item
-                name="smallPrice"
-                label="小图片价格"
-                rules={[{ required: true, message: '请输入价格' }]}
-              >
-                <InputNumber
-                  min={0}
-                  step={1}
-                  prefix="$"
-                />
-              </Form.Item>
-              <Form.Item
-                name="mediumPrice"
-                label="中图片价格"
-                rules={[{ required: true, message: '请输入价格' }]}
-              >
-                <InputNumber
-                  min={0}
-                  step={1}
-                  prefix="$"
-                />
-              </Form.Item>
-              <Form.Item
-                name="largePrice"
-                label="大图片价格"
-                rules={[{ required: true, message: '请输入价格' }]}
-              >
-                <InputNumber
-                  min={0}
-                  step={1}
-                  prefix="$"
-                />
-              </Form.Item>
-            </Space>
-          </Form.Item>
+            <Form.Item label="价格设置">
+              <Space>
+                <Form.Item
+                  name="smallPrice"
+                  label="小图片价格"
+                  rules={[{ required: true, message: '请输入价格' }]}
+                >
+                  <InputNumber
+                    min={0}
+                    step={1}
+                    prefix="$"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="mediumPrice"
+                  label="中图片价格"
+                  rules={[{ required: true, message: '请输入价格' }]}
+                >
+                  <InputNumber
+                    min={0}
+                    step={1}
+                    prefix="$"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="largePrice"
+                  label="大图片价格"
+                  rules={[{ required: true, message: '请输入价格' }]}
+                >
+                  <InputNumber
+                    min={0}
+                    step={1}
+                    prefix="$"
+                  />
+                </Form.Item>
+              </Space>
+            </Form.Item>
 
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit">
-                保存修改
-              </Button>
-              <Button onClick={() => {
-                setIsEditModalVisible(false);
-                setEditingPhoto(null);
-              }}>
-                取消
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </Layout>
+            <Form.Item>
+              <Space>
+                <Button type="primary" htmlType="submit">
+                  保存修改
+                </Button>
+                <Button onClick={() => {
+                  setIsEditModalVisible(false);
+                  setEditingPhoto(null);
+                }}>
+                  取消
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Modal>
+      </Layout>
+    </RouteGuard>
   );
 };
 
