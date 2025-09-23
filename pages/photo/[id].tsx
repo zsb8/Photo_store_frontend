@@ -29,6 +29,10 @@ interface PhotoInfoData {
   upload_datetime: string;
   s3_newsize_path: string;
   title: string;
+  size?: string;
+  type?: string;
+  place?: string;
+  photo_year?: string;
 }
 
 const PhotoDetailPage = () => {
@@ -47,6 +51,7 @@ const PhotoDetailPage = () => {
     address: '',
     email: ''
   });
+  
 
   // 获取图片详细信息
   useEffect(() => {
@@ -95,6 +100,7 @@ const PhotoDetailPage = () => {
     setContactInfo(all);
     try { localStorage.setItem('contact_info', JSON.stringify(all)); } catch {}
   };
+
 
   // 从本地存储获取图片的预授权链接
   const getPresignedUrlFromStorage = (photoId: string): string | null => {
@@ -287,6 +293,18 @@ const PhotoDetailPage = () => {
                     <div>图片ID: {photoInfo.id}</div>
                     <div>上传时间: {new Date(photoInfo.upload_datetime).toLocaleString()}</div>
                     <div>设置时间: {new Date(photoInfo.setting_datetime).toLocaleString()}</div>
+                    {photoInfo.size && (
+                      <div>尺寸: {photoInfo.size}</div>
+                    )}
+                    {photoInfo.type && (
+                      <div>类型: {photoInfo.type}</div>
+                    )}
+                    {photoInfo.place && (
+                      <div>拍摄地点: {photoInfo.place}</div>
+                    )}
+                    {photoInfo.photo_year && (
+                      <div>拍摄时间（年）: {photoInfo.photo_year}</div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -347,6 +365,8 @@ const PhotoDetailPage = () => {
                   </div>
                 </div>
                 
+                
+
                 {/* 购买按钮 */}
                 <div style={{ marginTop: '16px' }}>
                   <Alert 
@@ -407,7 +427,7 @@ const PhotoDetailPage = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.85)',
+            backgroundColor: '#000',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -420,18 +440,19 @@ const PhotoDetailPage = () => {
             aria-label="关闭预览"
             style={{
               position: 'absolute',
-              top: 16,
-              right: 16,
-              width: 36,
-              height: 36,
-              borderRadius: 18,
+              top: 20,
+              right: 20,
+              width: 70,
+              height: 70,
+              borderRadius: 35,
               border: 'none',
-              background: 'rgba(0,0,0,0.6)',
+              background: '#000',
               color: '#fff',
-              fontSize: 18,
+              fontSize: 36,
               cursor: 'pointer',
-              lineHeight: '36px',
-              textAlign: 'center'
+              lineHeight: '70px',
+              textAlign: 'center',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
             }}
           >
             ×

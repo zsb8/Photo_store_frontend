@@ -1,0 +1,60 @@
+.header {
+  background-color: #001529;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+}
+
+.brandLink {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.navArea {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.menu {
+  background: transparent;
+}
+
+.langSelectWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+}
+
+.langLabel {
+  color: #ffffff;
+}
+
+.langSelect :global(.ant-select-selector) {
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    height: 56px;
+    padding: 0 12px;
+  }
+  .brandLink {
+    font-size: 16px;
+  }
+}
+
+

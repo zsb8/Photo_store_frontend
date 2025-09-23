@@ -5,12 +5,19 @@ import zhCN from "antd/locale/zh_CN";
 import "antd/dist/reset.css";
 import "../styles/globals.css";
 import { CartProvider } from "../contexts/CartContext";
+import { Layout } from "antd";
+import SiteHeader from "../components/SiteHeader";
 
 const App = ({ Component, pageProps }: AppProps) => {
   return (
     <ConfigProvider locale={zhCN}>
       <CartProvider>
-        <Component {...pageProps} />
+        <Layout>
+          <SiteHeader />
+          <Layout.Content>
+            <Component {...pageProps} />
+          </Layout.Content>
+        </Layout>
       </CartProvider>
     </ConfigProvider>
   );

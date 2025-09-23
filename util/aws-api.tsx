@@ -34,8 +34,24 @@ export async function upload_photo(
     filename: string, 
     title?: string, 
     description?: string, 
-    prices?: { small: number; medium: number; large: number }
+    prices?: { small: number; medium: number; large: number },
+    size?: string,
+    type?: string,
+    place?: string,
+    photo_year?: string
 ): Promise<UploadPhotoResponse> {
+    console.log("!!!!=====upload_photo START");
+    console.log("Photo data:", photoData);
+    console.log("Filename:", filename);
+    console.log("Title:", title);
+    console.log("Description:", description);
+    console.log("Prices:", prices);
+    console.log("Size:", size);
+    console.log("Type:", type);
+    console.log("Place:", place);
+    console.log("Photo year:", photo_year);
+    console.log("!!!!=====upload_photo END");
+
     const uploadUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/upload_photo`;
     
     // 第一步：上传图片（只使用photo_data和file_name）
@@ -74,6 +90,10 @@ export async function upload_photo(
             description,
             prices,
             record_id,
+            size,
+            type,
+            place,
+            photo_year,
         });
         
         const saveSettingsResult = await save_photo_settings(
@@ -81,7 +101,11 @@ export async function upload_photo(
             title,
             description,
             prices,
-            record_id
+            record_id,
+            size,
+            type,
+            place,
+            photo_year
         );
         
         if (!saveSettingsResult.success) {
@@ -138,6 +162,10 @@ interface SavePhotoSettingsRequest {
             large: string;
         };
         record_id?: string;
+        size?: string;
+        type?: string;
+        place?: string;
+        photo_year?: string;
     };
 }
 
@@ -160,7 +188,11 @@ export async function save_photo_settings(
     title?: string,
     description?: string,
     prices?: { small: number; medium: number; large: number },
-    record_id?: string
+    record_id?: string,
+    size?: string,
+    type?: string,
+    place?: string,
+    photo_year?: string
 ): Promise<SavePhotoSettingsResponse> {
     console.log("!!!!=====save_photo_settings", filename, title, description, prices, record_id);
     const saveUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/save_photo_settings`;
@@ -174,7 +206,11 @@ export async function save_photo_settings(
                 medium: prices.medium.toString(),
                 large: prices.large.toString()
             } : undefined,
-            record_id: record_id
+            record_id: record_id,
+            size: size,
+            type: type,
+            place: place,
+            photo_year: photo_year
         },
     };
     console.log("Saving photo settings:", saveData);
@@ -390,7 +426,11 @@ export async function upload_bigphoto(
     contentType: string,
     title?: string,
     description?: string,
-    prices?: { small: number; medium: number; large: number }
+    prices?: { small: number; medium: number; large: number },
+    size?: string,
+    type?: string,
+    place?: string,
+    photo_year?: string
 ): Promise<UploadPhotoResponse> {
     console.log("!!!!=====upload_bigphoto START");
     console.log("File:", { name: file.name, size: file.size, type: file.type });
@@ -425,6 +465,11 @@ export async function upload_bigphoto(
                 title,
                 description,
                 prices,
+                undefined,
+                size,
+                type,
+                place,
+                photo_year
             );
             if (!saveSettingsResult.success) {
                 console.warn('Big photo uploaded but settings save failed:', saveSettingsResult.message);

@@ -265,7 +265,11 @@ const PhotosBackendManagement: React.FC = () => {
               small: values.smallPrice || 5,
               medium: values.mediumPrice || 10,
               large: values.largePrice || 20
-            }
+            },
+            values.metaSize,
+            values.metaType,
+            values.metaPlace,
+            values.metaYear ? String(values.metaYear) : undefined
           );
         } else {
           // 小图：使用upload_photo（Base64）
@@ -279,7 +283,11 @@ const PhotosBackendManagement: React.FC = () => {
               small: values.smallPrice || 5,
               medium: values.mediumPrice || 10,
               large: values.largePrice || 20
-            }
+            },
+            values.metaSize,
+            values.metaType,
+            values.metaPlace,
+            values.metaYear ? String(values.metaYear) : undefined
           );
         }
         
@@ -881,6 +889,33 @@ const PhotosBackendManagement: React.FC = () => {
                       prefix="$"
                     />
                   </Form.Item>
+                </Space>
+              </Form.Item>
+
+              <Form.Item label="作品信息">
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Space wrap>
+                    <Form.Item name="metaSize" label="尺寸">
+                      <Input placeholder="如：30x40 cm" />
+                    </Form.Item>
+                    <Form.Item name="metaType" label="类型">
+                      <Select style={{ width: 160 }} placeholder="请选择">
+                        <Select.Option value="animal">动物</Select.Option>
+                        <Select.Option value="flowers">花卉</Select.Option>
+                        <Select.Option value="landscape">风光</Select.Option>
+                        <Select.Option value="portrait">人像</Select.Option>
+                        <Select.Option value="other">其他</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </Space>
+                  <Space wrap>
+                    <Form.Item name="metaPlace" label="拍摄地点">
+                      <Input placeholder="如：Banff, Canada" />
+                    </Form.Item>
+                    <Form.Item name="metaYear" label="拍摄时间（年）">
+                      <Input placeholder="如：2024" />
+                    </Form.Item>
+                  </Space>
                 </Space>
               </Form.Item>
 

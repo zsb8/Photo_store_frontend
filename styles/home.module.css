@@ -412,6 +412,56 @@
   flex-direction: row;
 }
 
+/* 首页全屏轮播，防止图片被压缩 */
+.fullHeightCarousel {
+  height: calc(100vh - 64px);
+}
+
+.fullHeightCarousel :global(.slick-slider),
+.fullHeightCarousel :global(.slick-list),
+.fullHeightCarousel :global(.slick-track) {
+  height: 100% !important;
+}
+
+.fullHeightSlide {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 64px);
+  background: #000;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: #ffffff;
+  text-align: center;
+  padding: 0 24px;
+}
+
+.heroLineTop {
+  font-size: clamp(14px, 2vw, 20px);
+  margin-bottom: 16px;
+  opacity: 0.95;
+}
+
+.heroTitle {
+  font-size: clamp(28px, 6vw, 56px);
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.heroLineBottom {
+  font-size: clamp(12px, 1.8vw, 18px);
+  opacity: 0.95;
+}
+
 .photoImageContainer {
   position: relative;
   height: 400px;
