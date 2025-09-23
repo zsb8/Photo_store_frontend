@@ -146,16 +146,16 @@ const PaymentSuccessPage: React.FC = () => {
                 key="home"
                 icon={<HomeOutlined />}
                 loading={navigating === 'home'}
-                onClick={() => handleNavigation('/', 'home')}
+                onClick={() => handleNavigation('/print-store', 'home')}
                 size="large"
               >
-                {navigating === 'home' ? '跳转中...' : '返回首页'}
+                {navigating === 'home' ? '跳转中...' : '返回购买页面'}
               </Button>,
               <Button 
                 key="payment"
                 icon={<ShoppingOutlined />}
                 loading={navigating === 'payment'}
-                onClick={() => handleNavigation('/home', 'payment')}
+                onClick={() => handleNavigation('/print-store', 'payment')}
                 size="large"
               >
                 {navigating === 'payment' ? '跳转中...' : '继续购买'}

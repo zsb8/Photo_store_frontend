@@ -40,15 +40,15 @@ const PaymentCancelledPage: React.FC = () => {
                 type="primary" 
                 key="home"
                 icon={<HomeOutlined />}
-                onClick={() => router.push('/')}
+                onClick={() => router.push('/print-store')}
                 size="large"
               >
-                返回首页
+                返回购买页面
               </Button>,
               <Button 
                 key="payment"
                 icon={<ShoppingOutlined />}
-                onClick={() => router.push('/')}
+                onClick={() => router.push('/print-store')}
                 size="large"
               >
                 重新购买

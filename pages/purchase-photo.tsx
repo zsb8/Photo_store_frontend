@@ -124,7 +124,7 @@ const PurchasePhotoPage: React.FC = () => {
   };
 
   const handleBackToHome = () => {
-    router.push('/');
+    router.push('/print-store');
   };
 
   if (loading) {
@@ -156,7 +156,7 @@ const PurchasePhotoPage: React.FC = () => {
           subTitle="请先选择要购买的照片"
           extra={
             <Button type="primary" onClick={handleBackToHome}>
-              返回首页
+              返回购买页面
             </Button>
           }
         />
@@ -192,7 +192,7 @@ const PurchasePhotoPage: React.FC = () => {
               onClick={handleBackToHome}
               size="middle"
             >
-              返回首页
+              返回购买页面
             </Button>
           </div>
 
