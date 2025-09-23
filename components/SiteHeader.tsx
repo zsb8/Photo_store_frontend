@@ -9,6 +9,7 @@ const { Header } = Layout;
 
 const menuItems: MenuProps["items"] = [
   { key: "/", label: <Link href="/">主页</Link> },
+  { key: "/photo_types", label: <Link href="/photo_types">相片</Link> },
   { key: "/print-store", label: <Link href="/print-store">购买</Link> },
   { key: "/about", label: <Link href="/about">作者简介</Link> },
   { key: "/contact", label: <Link href="/contact">联系</Link> }
