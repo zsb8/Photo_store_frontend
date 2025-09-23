@@ -166,7 +166,7 @@ const SlideshowHome: React.FC = () => {
                 >
                   <div className={styles.heroLineTop}>奇迹将从这里开始</div>
                   <div className={styles.heroTitle}>连众 风光摄影</div>
-                  <div className={styles.heroLineBottom}>根据连众去探索世界大自然之绮丽</div>
+                  <div className={styles.heroLineBottom}>跟着连众去探索世界大自然之绮丽</div>
                 </div>
               </div>
             ))}
