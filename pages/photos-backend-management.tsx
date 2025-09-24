@@ -6,6 +6,9 @@ import { photos, Photo, PhotoSize } from '../data/photos';
 import { upload_photo, fileToBase64, get_all_photo_settings, get_photos_presigned_url, save_photo_settings, upload_bigphoto, delete_photo_from_dynamodb_s3 } from '../util/aws-api';
 import styles from '../styles/photos-backend-management.module.css';
 import { RouteGuard } from '../components/route-guard';
+import UploadPhotoModule from '../components/UploadPhotoModule';
+import EditPhotosModule from '../components/EditPhotosModule';
+import ViewOrdersModule from '../components/ViewOrdersModule';
 
 const { Header, Sider, Content } = Layout;
 const { TextArea } = Input;
@@ -786,350 +789,84 @@ const PhotosBackendManagement: React.FC = () => {
     switch (selectedMenu) {
       case 'upload-photo':
         return (
-          <Card title="上传图片" className={styles.contentCard}>
-            <Form
-              form={uploadForm}
-              layout="vertical"
-              onFinish={handlePhotoUpload}
-              style={{ maxWidth: 600 }}
-            >
-              <Form.Item
-                name="image"
-                label="选择图片"
-                rules={[{ required: true, message: '请选择图片文件' }]}
-              >
-                <Upload
-                  beforeUpload={() => false}
-                  accept="image/*"
-                  maxCount={1}
-                  listType="picture-card"
-                  fileList={selectedImage ? [selectedImage] : []}
-                  onChange={handleImageChange}
-                  showUploadList={{
-                    showPreviewIcon: true,
-                    showRemoveIcon: true,
-                    showDownloadIcon: false,
-                  }}
-                >
-                  {!selectedImage && (
-                    <div>
-                      <PlusOutlined />
-                      <div style={{ marginTop: 8 }}>上传图片</div>
-                    </div>
-                  )}
-                </Upload>
-                {selectedImage && (
-                  <div style={{ marginTop: 8, padding: 8, background: '#f5f5f5', borderRadius: 4 }}>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>
-                      <strong>文件名:</strong> {selectedImage.name}
-                    </p>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
-                      <strong>文件大小:</strong> {(selectedImage.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
-                      <strong>文件类型:</strong> {selectedImage.type || '未知类型'}
-                    </p>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
-                      <strong>上传方式:</strong> {selectedImage.size >= 2 * 1024 * 1024 ? '大图直传S3' : '小图Base64'}
-                    </p>
-                  </div>
-                )}
-              </Form.Item>
-
-              <Form.Item
-                name="alt"
-                label="图片标题"
-                rules={[{ required: true, message: '请输入图片标题' }]}
-              >
-                <Input placeholder="请输入图片标题" />
-              </Form.Item>
-
-              <Form.Item
-                name="description"
-                label="图片描述"
-              >
-                <TextArea rows={4} placeholder="请输入图片描述" />
-              </Form.Item>
-
-              <Form.Item label="价格设置">
-                <Space>
-                  <Form.Item
-                    name="smallPrice"
-                    label="小图片价格"
-                    rules={[{ required: true, message: '请输入价格' }]}
-                  >
-                    <InputNumber
-                      min={0}
-                      step={1}
-                      placeholder="5"
-                      prefix="$"
-                    />
-                  </Form.Item>
-                  <Form.Item
-                    name="mediumPrice"
-                    label="中图片价格"
-                    rules={[{ required: true, message: '请输入价格' }]}
-                  >
-                    <InputNumber
-                      min={0}
-                      step={1}
-                      placeholder="10"
-                      prefix="$"
-                    />
-                  </Form.Item>
-                  <Form.Item
-                    name="largePrice"
-                    label="大图片价格"
-                    rules={[{ required: true, message: '请输入价格' }]}
-                  >
-                    <InputNumber
-                      min={0}
-                      step={1}
-                      placeholder="20"
-                      prefix="$"
-                    />
-                  </Form.Item>
-                </Space>
-              </Form.Item>
-
-              <Form.Item label="作品信息">
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Space wrap>
-                    <Form.Item name="metaSize" label="尺寸">
-                      <Input placeholder="如：30x40 cm" />
-                    </Form.Item>
-                    <Form.Item name="metaType" label="类型">
-                      <Select style={{ width: 160 }} placeholder="请选择">
-                        <Select.Option value="animal">动物</Select.Option>
-                        <Select.Option value="flowers">花卉</Select.Option>
-                        <Select.Option value="landscape">风光</Select.Option>
-                        <Select.Option value="portrait">人像</Select.Option>
-                        <Select.Option value="other">其他</Select.Option>
-                      </Select>
-                    </Form.Item>
-                  </Space>
-                  <Space wrap>
-                    <Form.Item name="metaPlace" label="拍摄地点">
-                      <Input placeholder="如：Banff, Canada" />
-                    </Form.Item>
-                    <Form.Item name="metaYear" label="拍摄时间（年）">
-                      <Input placeholder="如：2024" />
-                    </Form.Item>
-                  </Space>
-                </Space>
-              </Form.Item>
-
-              <Form.Item>
-                <Space>
-                  <Button 
-                    type="primary" 
-                    htmlType="submit" 
-                    icon={<UploadOutlined />}
-                    loading={isUploading}
-                    disabled={isUploading}
-                  >
-                    {isUploading ? '上传中...' : '上传图片'}
-                  </Button>
-                  {selectedImage && !isUploading && (
-                    <Button onClick={clearImage} icon={<ClearOutlined />}>
-                      清除选择
-                    </Button>
-                  )}
-                </Space>
-              </Form.Item>
-            </Form>
-          </Card>
+          <UploadPhotoModule
+            uploadForm={uploadForm}
+            selectedImage={selectedImage}
+            isUploading={isUploading}
+            onImageChange={handleImageChange}
+            onClearImage={clearImage}
+            onSubmit={handlePhotoUpload}
+          />
         );
 
       case 'edit-photos':
         return (
-          <Card title="编辑图片信息" className={styles.contentCard}>
-            <div style={{ marginBottom: '16px' }}>
-              <Button 
-                type="primary" 
-                icon={<PictureOutlined />}
-                onClick={async () => {
-                  try {
-                    message.loading('正在刷新图片数据...', 0);
-                    
-                    // 获取所有图片设置信息
-                    const photoSettingsResponse = await get_all_photo_settings();
-                    console.log('Photo settings response:', photoSettingsResponse);
-                    
-                    if (photoSettingsResponse.data && photoSettingsResponse.data.length > 0) {
-                      // 获取图片画廊数据（包含预授权链接）
-                      const galleryResponse = await get_photos_presigned_url();
-                      console.log('Gallery response:', galleryResponse);
-                      
-                      // 创建图片ID到预授权链接的映射
-                      const presignedUrlMap = new Map<string, string>();
-                      if (galleryResponse.data) {
-                        galleryResponse.data.forEach((item: any) => {
-                          presignedUrlMap.set(item.id, item.presigned_url);
-                        });
-                      }
-                      
-                      // 转换数据格式以匹配 Photo 接口
-                      const convertedPhotos: Photo[] = photoSettingsResponse.data.map((item: any, index: number) => {
-                        // 从价格信息中提取价格值
-                        const smallPrice = item.prices?.small?.S ? parseFloat(item.prices.small.S) : 5;
-                        const mediumPrice = item.prices?.medium?.S ? parseFloat(item.prices.medium.S) : 10;
-                        const largePrice = item.prices?.large?.S ? parseFloat(item.prices.large.S) : 20;
-                        
-                        return {
-                          id: item.id || `photo_${index}`, // 使用API返回的真实ID
-                          uniqueId: item.id || `photo_${index}`,
-                          src: presignedUrlMap.get(item.id) || item.s3_newsize_path || `/placeholder-${index + 1}.jpg`,
-                          alt: item.title || item.filename || `Photo ${index + 1}`,
-                          sizes: [
-                            { size: 'small', label: '小图片', price: smallPrice },
-                            { size: 'medium', label: '中图片', price: mediumPrice },
-                            { size: 'large', label: '大图片', price: largePrice }
-                          ],
-                          description: item.description || '暂无描述'
-                        };
-                      });
-                      
-                      setPhotoList(convertedPhotos);
-                      message.destroy();
-                      message.success(`图片数据已刷新，共 ${convertedPhotos.length} 张图片`);
-                      console.log('Refreshed photo data from API:', convertedPhotos);
-                    } else {
-                      message.destroy();
-                      message.warning('未找到图片数据，请先上传图片');
-                    }
-                  } catch (error) {
-                    message.destroy();
-                    console.error('Error refreshing photo data:', error);
-                    message.error(`刷新图片数据失败: ${error instanceof Error ? error.message : '未知错误'}`);
+          <EditPhotosModule
+            photoList={photoList}
+            onRefresh={async () => {
+              // 复用当前页面已有刷新逻辑
+              try {
+                message.loading('正在刷新图片数据...', 0);
+                const photoSettingsResponse = await get_all_photo_settings();
+                if (photoSettingsResponse.data && photoSettingsResponse.data.length > 0) {
+                  const galleryResponse = await get_photos_presigned_url();
+                  const presignedUrlMap = new Map<string, string>();
+                  if (galleryResponse.data) {
+                    galleryResponse.data.forEach((item: any) => {
+                      presignedUrlMap.set(item.id, item.presigned_url);
+                    });
                   }
-                }}
-              >
-                刷新图片数据
-              </Button>
-              <span style={{ marginLeft: '12px', fontSize: '12px', color: '#666' }}>
-                当前显示 {photoList.length} 张图片
-              </span>
-            </div>
-            <Table
-              dataSource={photoList}
-              columns={columns}
-              rowKey="id"
-              pagination={{
-                pageSize: 10,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`,
-              }}
-              scroll={{ x: 1000 }}
-            />
-          </Card>
+                  const convertedPhotos: Photo[] = photoSettingsResponse.data.map((item: any, index: number) => {
+                    const smallPrice = item.prices?.small?.S ? parseFloat(item.prices.small.S) : 5;
+                    const mediumPrice = item.prices?.medium?.S ? parseFloat(item.prices.medium.S) : 10;
+                    const largePrice = item.prices?.large?.S ? parseFloat(item.prices.large.S) : 20;
+                    return {
+                      id: item.id || `photo_${index}`,
+                      uniqueId: item.id || `photo_${index}`,
+                      src: presignedUrlMap.get(item.id) || item.s3_newsize_path || `/placeholder-${index + 1}.jpg`,
+                      alt: item.title || item.filename || `Photo ${index + 1}`,
+                      sizes: [
+                        { size: 'small', label: '小图片', price: smallPrice },
+                        { size: 'medium', label: '中图片', price: mediumPrice },
+                        { size: 'large', label: '大图片', price: largePrice }
+                      ],
+                      description: item.description || '暂无描述'
+                    };
+                  });
+                  setPhotoList(convertedPhotos);
+                  message.destroy();
+                  message.success(`图片数据已刷新，共 ${convertedPhotos.length} 张图片`);
+                } else {
+                  message.destroy();
+                  message.warning('未找到图片数据，请先上传图片');
+                }
+              } catch (error) {
+                message.destroy();
+                console.error('Error refreshing photo data:', error);
+                message.error(`刷新图片数据失败: ${error instanceof Error ? error.message : '未知错误'}`);
+              }
+            }}
+            onOpenEdit={openEditModal}
+            onDelete={handleDeletePhoto}
+          />
         );
 
       case 'view-orders':
         return (
-          <Card title="查看订单" className={styles.contentCard}>
-            {/* 搜索和筛选区域 */}
-            <div style={{ marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <Input
-                placeholder="搜索订单ID、描述或邮箱"
-                prefix={<SearchOutlined />}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                style={{ width: 300 }}
-              />
-              <Select
-                value={statusFilter}
-                onChange={setStatusFilter}
-                style={{ width: 120 }}
-              >
-                <Option value="all">全部状态</Option>
-                <Option value="paid">已支付</Option>
-                <Option value="pending">处理中</Option>
-                <Option value="failed">失败</Option>
-                <Option value="canceled">已取消</Option>
-              </Select>
-              <RangePicker
-                onChange={(dates) => {
-                  if (dates && dates[0] && dates[1]) {
-                    setDateRange([dates[0].format('YYYY-MM-DD'), dates[1].format('YYYY-MM-DD')]);
-                  } else {
-                    setDateRange(null);
-                  }
-                }}
-                placeholder={['开始日期', '结束日期']}
-              />
-              <Button 
-                icon={<ReloadOutlined />}
-                onClick={loadPayments}
-                loading={paymentsLoading}
-              >
-                刷新
-              </Button>
-            </div>
-
-            {/* 统计信息 */}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-              gap: '16px', 
-              marginBottom: '24px' 
-            }}>
-              <Card size="small">
-                <div style={{ textAlign: 'center' }}>
-                  <Title level={4} style={{ margin: 0, color: '#52c41a' }}>
-                    {payments.filter(p => p.status === 'paid').length}
-                  </Title>
-                  <Text type="secondary">成功支付</Text>
-                </div>
-              </Card>
-              <Card size="small">
-                <div style={{ textAlign: 'center' }}>
-                  <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
-                    {formatAmount(
-                      payments
-                        .filter(p => p.status === 'paid')
-                        .reduce((sum, p) => sum + p.amount, 0),
-                      'usd'
-                    )}
-                  </Title>
-                  <Text type="secondary">总支付金额</Text>
-                </div>
-              </Card>
-              <Card size="small">
-                <div style={{ textAlign: 'center' }}>
-                  <Title level={4} style={{ margin: 0, color: '#faad14' }}>
-                    {payments.filter(p => p.status === 'pending').length}
-                  </Title>
-                  <Text type="secondary">处理中</Text>
-                </div>
-              </Card>
-              <Card size="small">
-                <div style={{ textAlign: 'center' }}>
-                  <Title level={4} style={{ margin: 0, color: '#666' }}>
-                    {filteredPayments.length}
-                  </Title>
-                  <Text type="secondary">当前显示</Text>
-                </div>
-              </Card>
-            </div>
-
-            {/* 支付记录表格 */}
-            <Table
-              columns={paymentColumns}
-              dataSource={filteredPayments}
-              rowKey="id"
-              loading={paymentsLoading}
-              pagination={{
-                pageSize: 10,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total, range) => 
-                  `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
-              }}
-              scroll={{ x: 1000 }}
-            />
-          </Card>
+          <ViewOrdersModule
+            payments={payments}
+            filteredPayments={filteredPayments}
+            paymentsLoading={paymentsLoading}
+            searchText={searchText}
+            setSearchText={setSearchText}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            setDateRange={setDateRange}
+            loadPayments={loadPayments}
+            formatAmount={formatAmount}
+            formatDate={formatDate}
+            getStatusTag={getStatusTag}
+          />
         );
 
       default:
