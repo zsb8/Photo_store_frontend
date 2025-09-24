@@ -14,6 +14,9 @@ export default function PhotoTypeListPage() {
   const { type } = router.query as { type?: string };
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<any[]>([]);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [previewAlt, setPreviewAlt] = useState<string>("");
 
   useEffect(() => {
     if (!type) return;
@@ -45,6 +48,12 @@ export default function PhotoTypeListPage() {
     load();
   }, [type]);
 
+  const openPreview = (url: string, alt: string) => {
+    setPreviewUrl(url);
+    setPreviewAlt(alt);
+    setIsPreviewOpen(true);
+  };
+
   return (
     <>
       <Head>
@@ -66,9 +75,13 @@ export default function PhotoTypeListPage() {
             <Row gutter={[16, 16]}>
               {items.map((p) => (
                 <Col xs={24} sm={12} md={8} lg={6} key={p.id}>
-                  <div style={{ position: 'relative', height: 200, borderRadius: 8, overflow: 'hidden', background: '#f0f0f0' }}>
+                  <div 
+                    style={{ position: 'relative', width: 320, height: 200, borderRadius: 8, overflow: 'hidden', background: '#f0f0f0', cursor: 'zoom-in', margin: '0 auto' }}
+                    onClick={() => openPreview(p.url, p.title || p.filename)}
+                    onContextMenu={(e) => e.preventDefault()}
+                  >
                     {p.url ? (
-                      <Image src={p.url} alt={p.title || p.filename} fill style={{ objectFit: 'cover' }} />
+                      <Image src={p.url} alt={p.title || p.filename} fill style={{ objectFit: 'contain' }} />
                     ) : (
                       <div style={{ height: 200, background: '#f5f5f5' }} />
                     )}
@@ -76,6 +89,63 @@ export default function PhotoTypeListPage() {
                 </Col>
               ))}
             </Row>
+          )}
+          {isPreviewOpen && previewUrl && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              style={{
+                position: 'fixed',
+                inset: 0,
+                backgroundColor: '#000',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000
+              }}
+              onClick={() => setIsPreviewOpen(false)}
+            >
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsPreviewOpen(false); }}
+                aria-label="关闭预览"
+                style={{
+                  position: 'absolute',
+                  top: 20,
+                  right: 20,
+                  width: 70,
+                  height: 70,
+                  borderRadius: 35,
+                  border: 'none',
+                  background: '#000',
+                  color: '#fff',
+                  fontSize: 36,
+                  cursor: 'pointer',
+                  lineHeight: '70px',
+                  textAlign: 'center',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                }}
+              >
+                ×
+              </button>
+              <img
+                src={previewUrl}
+                alt={previewAlt}
+                style={{
+                  maxWidth: '90vw',
+                  maxHeight: '90vh',
+                  width: 'auto',
+                  height: 'auto',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                  borderRadius: 4,
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                  WebkitTouchCallout: 'none'
+                }}
+                onClick={(e) => e.stopPropagation()}
+                onContextMenu={(e) => e.preventDefault()}
+                draggable={false}
+              />
+            </div>
           )}
         </div>
       </main>

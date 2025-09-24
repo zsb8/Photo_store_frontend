@@ -40,18 +40,6 @@ export async function upload_photo(
     place?: string,
     photo_year?: string
 ): Promise<UploadPhotoResponse> {
-    console.log("!!!!=====upload_photo START");
-    console.log("Photo data:", photoData);
-    console.log("Filename:", filename);
-    console.log("Title:", title);
-    console.log("Description:", description);
-    console.log("Prices:", prices);
-    console.log("Size:", size);
-    console.log("Type:", type);
-    console.log("Place:", place);
-    console.log("Photo year:", photo_year);
-    console.log("!!!!=====upload_photo END");
-
     const uploadUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/upload_photo`;
     
     // 第一步：上传图片（只使用photo_data和file_name）

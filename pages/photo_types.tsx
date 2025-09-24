@@ -74,28 +74,32 @@ export default function PhotoTypesPage() {
           ) : keys.length === 0 ? (
             <Empty description="暂无相片" />
           ) : (
-            keys.map((k) => (
-              <div key={k} style={{ marginBottom: 24 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                  <Title level={4} style={{ margin: 0 }}>{k}</Title>
-                  <Tag color="blue">{grouped[k].length}</Tag>
-                  <Link href={`/photo/type/${encodeURIComponent(k)}`}>查看该分类</Link>
-                </div>
-                <Row gutter={[16, 16]}>
-                  {grouped[k].slice(0, 6).map((p) => (
-                    <Col xs={24} sm={12} md={8} lg={6} key={p.id}>
-                      <div style={{ position: "relative", height: 180, borderRadius: 8, overflow: "hidden", background: "#f0f0f0" }}>
-                        {p.s3_newsize_path ? (
-                          <Image src={p.s3_newsize_path} alt={p.title || p.filename} fill style={{ objectFit: "cover" }} />
-                        ) : (
-                          <div style={{ height: 180, background: "#f5f5f5" }} />
-                        )}
-                      </div>
-                    </Col>
-                  ))}
-                </Row>
-              </div>
-            ))
+            <Row gutter={[24, 24]}>
+              {keys.map((k) => (
+                <Col xs={24} sm={24} md={8} lg={8} key={k}>
+                  <div style={{ marginBottom: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                      <Title level={4} style={{ margin: 0 }}>{k}</Title>
+                      <Tag color="blue">{grouped[k].length}</Tag>
+                      <Link href={`/photo/type/${encodeURIComponent(k)}`}>查看该分类</Link>
+                    </div>
+                    <Row gutter={[16, 16]}>
+                      {grouped[k].slice(0, 1).map((p) => (
+                        <Col xs={24} key={p.id}>
+                          <div style={{ position: "relative", width: 320, height: 200, borderRadius: 8, overflow: "hidden", background: "#f0f0f0", margin: '0 auto' }}>
+                            {p.s3_newsize_path ? (
+                              <Image src={p.s3_newsize_path} alt={p.title || p.filename} fill style={{ objectFit: "contain" }} />
+                            ) : (
+                              <div style={{ height: 200, background: "#f5f5f5" }} />
+                            )}
+                          </div>
+                        </Col>
+                      ))}
+                    </Row>
+                  </div>
+                </Col>
+              ))}
+            </Row>
           )}
         </div>
       </main>
