@@ -6,6 +6,7 @@ import { Card, Button, Typography, Space, Divider, message, Radio, Row, Col, Spi
 import { ArrowLeftOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { useCart } from "../../contexts/CartContext";
 import ShoppingCart from "../../components/ShoppingCart";
+import ImagePreviewModal from "../../components/ImagePreviewModal";
 import styles from "../../styles/home.module.css";
 import { get_photo_info } from "../../util/aws-api";
 
@@ -424,63 +425,12 @@ const PhotoDetailPage = () => {
           </Card>
         </div>
       </main>
-      {isPreviewOpen && presignedUrl && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: '#000',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000
-          }}
-          onClick={() => setIsPreviewOpen(false)}
-        >
-          <button
-            onClick={(e) => { e.stopPropagation(); setIsPreviewOpen(false); }}
-            aria-label="关闭预览"
-            style={{
-              position: 'absolute',
-              top: 20,
-              right: 20,
-              width: 70,
-              height: 70,
-              borderRadius: 35,
-              border: 'none',
-              background: '#000',
-              color: '#fff',
-              fontSize: 36,
-              cursor: 'pointer',
-              lineHeight: '70px',
-              textAlign: 'center',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
-            }}
-          >
-            ×
-          </button>
-          <img
-            src={presignedUrl}
-            alt={photoInfo.title || photoInfo.filename}
-            style={{
-              maxWidth: '90vw',
-              maxHeight: '90vh',
-              width: 'auto',
-              height: 'auto',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-              borderRadius: 4,
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-              WebkitTouchCallout: 'none'
-            }}
-            onClick={(e) => e.stopPropagation()}
-            onContextMenu={(e) => e.preventDefault()}
-            draggable={false}
-          />
-        </div>
-      )}
+      <ImagePreviewModal
+        isOpen={isPreviewOpen}
+        imageUrl={presignedUrl || ''}
+        imageAlt={photoInfo?.title || photoInfo?.filename || ''}
+        onClose={() => setIsPreviewOpen(false)}
+      />
     </>
   );
 };
