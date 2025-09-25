@@ -270,6 +270,7 @@ const PhotosBackendManagement: React.FC = () => {
               large: values.largePrice || 20
             },
             values.metaSize,
+            values.metaTopic,
             values.metaType,
             values.metaPlace,
             values.metaYear ? String(values.metaYear) : undefined
@@ -288,6 +289,7 @@ const PhotosBackendManagement: React.FC = () => {
               large: values.largePrice || 20
             },
             values.metaSize,
+            values.metaTopic,
             values.metaType,
             values.metaPlace,
             values.metaYear ? String(values.metaYear) : undefined
@@ -491,7 +493,7 @@ const PhotosBackendManagement: React.FC = () => {
   const handleDeletePhoto = async (photoId: number) => {
     try {
       // 显示删除进度
-      const loadingMessage = message.loading('正在删除图片...', 0);
+      const loadingMessage = message.loading('图片...', 0);
       
       // 调用 delete_photo_from_dynamodb_s3 API 删除图片
       const deleteResult = await delete_photo_from_dynamodb_s3(photoId.toString());

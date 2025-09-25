@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, Form, Upload, Input, InputNumber, Space, Button, Select } from 'antd';
 import { PlusOutlined, UploadOutlined, ClearOutlined } from '@ant-design/icons';
 import styles from '../styles/photos-backend-management.module.css';
@@ -22,6 +22,27 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
   onClearImage,
   onSubmit,
 }) => {
+  const [selectedTopic, setSelectedTopic] = useState<string>('');
+
+  // 子类别选项配置
+  const getSubcategoryOptions = (topic: string) => {
+    const subcategoryMap: { [key: string]: string[] } = {
+      '新品': ['新品'],
+      '自然风光': ['山脉', '海洋', '森林', '沙漠', '动物', '花卉', '烟花', '瀑布', '鸟禽', '冰雪', '江海', '夜景', '极光', '星空', '航拍', '微距'],
+      '城市建筑': ['地标', '街景', '夜景'],
+      '静物': ['物品'],
+      '抽象与艺术': ['光影', '色彩', '纹理', '极简', '创意'],
+      '人文与生活': ['人像', '街景', '情绪'],
+      '其他': ['其他']
+    };
+    return subcategoryMap[topic] || [];
+  };
+
+  const handleTopicChange = (value: string) => {
+    setSelectedTopic(value);
+    // 清空子类别选择
+    uploadForm.setFieldsValue({ metaType: undefined });
+  };
   return (
     <Card title="上传图片" className={styles.contentCard}>
       <Form
@@ -88,7 +109,7 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
           <TextArea rows={4} placeholder="请输入图片描述" />
         </Form.Item>
 
-        <Form.Item label="价格设置">
+        <Form.Item label="售价">
           <Space>
             <Form.Item
               name="smallPrice"
@@ -133,20 +154,38 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
           <Space direction="vertical" style={{ width: '100%' }}>
             <Space wrap>
               <Form.Item name="metaSize" label="尺寸">
-                <Input placeholder="如：30x40 cm" />
+                <Select style={{ width: 200 }} placeholder="请选择尺寸">
+                  <Select.Option value="6*8英寸，152*203毫米">小（6*8英寸，152*203毫米）</Select.Option>
+                  <Select.Option value="8*12英寸，203*305毫米">中（8*12英寸，203*305毫米）</Select.Option>
+                  <Select.Option value="12*18英寸，305*457毫米">大（12*18英寸，305*457毫米）</Select.Option>
+                  <Select.Option value="Special">特殊（X*Y英寸，M*N毫米）</Select.Option>
+                </Select>
               </Form.Item>
-              <Form.Item name="metaType" label="类型">
-                <Select style={{ width: 160 }} placeholder="请选择">
-                  <Select.Option value="animal">动物</Select.Option>
-                  <Select.Option value="flowers">花卉</Select.Option>
-                  <Select.Option value="landscape">风光</Select.Option>
-                  <Select.Option value="portrait">人像</Select.Option>
-                  <Select.Option value="other">其他</Select.Option>
+              <Form.Item name="metaTopic" label="主题">
+                <Select style={{ width: 160 }} placeholder="请选择主题" onChange={handleTopicChange}>
+                  <Select.Option value="新品">新品</Select.Option>
+                  <Select.Option value="自然风光">自然风光</Select.Option>
+                  <Select.Option value="城市建筑">城市建筑</Select.Option>
+                  <Select.Option value="静物">静物</Select.Option>
+                  <Select.Option value="抽象与艺术">抽象与艺术</Select.Option>
+                  <Select.Option value="人文与生活">人文与生活</Select.Option>
+                  <Select.Option value="其他">其他</Select.Option>
+                </Select>
+              </Form.Item>
+              <Form.Item name="metaType" label="子类别">
+                <Select 
+                  style={{ width: 160 }} 
+                  placeholder="请选择子类别"
+                  disabled={!selectedTopic}
+                >
+                  {getSubcategoryOptions(selectedTopic).map(option => (
+                    <Select.Option key={option} value={option}>{option}</Select.Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Space>
             <Space wrap>
-              <Form.Item name="metaPlace" label="拍摄地点">
+              <Form.Item name="metaPlace" label="拍摄地点(国家/目的地)">
                 <Input placeholder="如：Banff, Canada" />
               </Form.Item>
               <Form.Item name="metaYear" label="拍摄时间（年）">

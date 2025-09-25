@@ -30,6 +30,7 @@ interface PhotoInfoData {
   s3_newsize_path: string;
   title: string;
   size?: string;
+  topic?: string;
   type?: string;
   place?: string;
   photo_year?: string;
@@ -295,6 +296,9 @@ const PhotoDetailPage = () => {
                     <div>设置时间: {new Date(photoInfo.setting_datetime).toLocaleString()}</div>
                     {photoInfo.size && (
                       <div>尺寸: {photoInfo.size}</div>
+                    )}
+                    {photoInfo.type && (
+                      <div>主题: {photoInfo.topic}</div>
                     )}
                     {photoInfo.type && (
                       <div>类型: {photoInfo.type}</div>

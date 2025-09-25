@@ -4,13 +4,6 @@ const urlprefix = process.env.NEXT_PUBLIC_URLPREFIX ?? "";
 interface UploadPhotoRequest {
     photo_data: string;  // Base64编码的图片数据
     file_name: string;   // 文件名
-    title?: string;      // 图片标题
-    description?: string; // 图片描述
-    prices?: {           // 价格信息
-        small: number;   // 小图片价格
-        medium: number;  // 中图片价格
-        large: number;   // 大图片价格
-    };
 }
 
 interface UploadPhotoResponse {
@@ -36,6 +29,7 @@ export async function upload_photo(
     description?: string, 
     prices?: { small: number; medium: number; large: number },
     size?: string,
+    topic?: string,
     type?: string,
     place?: string,
     photo_year?: string
@@ -79,6 +73,7 @@ export async function upload_photo(
             prices,
             record_id,
             size,
+            topic,
             type,
             place,
             photo_year,
@@ -91,6 +86,7 @@ export async function upload_photo(
             prices,
             record_id,
             size,
+            topic,
             type,
             place,
             photo_year
@@ -151,6 +147,7 @@ interface SavePhotoSettingsRequest {
         };
         record_id?: string;
         size?: string;
+        topic?: string;
         type?: string;
         place?: string;
         photo_year?: string;
@@ -178,6 +175,7 @@ export async function save_photo_settings(
     prices?: { small: number; medium: number; large: number },
     record_id?: string,
     size?: string,
+    topic?: string,
     type?: string,
     place?: string,
     photo_year?: string
@@ -196,6 +194,7 @@ export async function save_photo_settings(
             } : undefined,
             record_id: record_id,
             size: size,
+            topic: topic,
             type: type,
             place: place,
             photo_year: photo_year
@@ -416,6 +415,7 @@ export async function upload_bigphoto(
     description?: string,
     prices?: { small: number; medium: number; large: number },
     size?: string,
+    topic?: string,
     type?: string,
     place?: string,
     photo_year?: string
@@ -455,6 +455,7 @@ export async function upload_bigphoto(
                 prices,
                 undefined,
                 size,
+                topic,
                 type,
                 place,
                 photo_year
