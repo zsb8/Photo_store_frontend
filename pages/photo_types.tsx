@@ -62,11 +62,11 @@ export default function PhotoTypesPage() {
   return (
     <>
       <Head>
-        <title>相片分类</title>
+        <title>图片分类</title>
       </Head>
       <main className={styles.main}>
         <div className={styles.container}>
-          <Title level={2} style={{ marginBottom: 16 }}>相片分类</Title>
+          <Title level={2} style={{ marginBottom: 16 }}>图片分类</Title>
           {loading ? (
             <div style={{ textAlign: "center", padding: 40 }}>
               <Spin size="large" />
