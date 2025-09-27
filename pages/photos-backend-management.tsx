@@ -223,14 +223,6 @@ const PhotosBackendManagement: React.FC = () => {
   // 处理图片上传（自动判断大小选择接口）
   const handlePhotoUpload = useCallback(async (values: any) => {
     try {
-      console.log('表单数据:', values);
-      console.log('价格数据:', {
-        smallPrice: values.smallPrice,
-        mediumPrice: values.mediumPrice,
-        largePrice: values.largePrice
-      });
-      console.log('选择的图片:', selectedImage);
-      
       // 优先使用selectedImage，如果没有则使用表单数据
       let file = null;
       if (selectedImage?.originFileObj) {

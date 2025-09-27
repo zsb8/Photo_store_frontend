@@ -12,6 +12,33 @@ import { get_photo_info } from "../../util/aws-api";
 
 const { Title, Paragraph, Text } = Typography;
 
+// 获取当前语言设置
+const getCurrentLanguage = (): string => {
+  if (typeof window === 'undefined') return 'zh';
+  try {
+    return localStorage.getItem('site_language') || 'zh';
+  } catch {
+    return 'zh';
+  }
+};
+
+// 解析多语言描述
+const parseMultiLanguageDescription = (description: string, language: string): string => {
+  try {
+    const parsed = JSON.parse(description);
+    const languageMap: { [key: string]: string } = {
+      'zh': 'CHS',
+      'en': 'ENG', 
+      'fr': 'FRA'
+    };
+    const langKey = languageMap[language] || 'CHS';
+    return parsed[langKey] || parsed['CHS'] || description;
+  } catch {
+    // 如果解析失败，返回原始描述
+    return description;
+  }
+};
+
 // 图片信息接口定义
 interface PhotoInfoData {
   filename: string;
@@ -53,6 +80,7 @@ const PhotoDetailPage = () => {
     address: '',
     email: ''
   });
+  const [currentLanguage, setCurrentLanguage] = useState<string>('zh');
   
 
   // 获取图片详细信息
@@ -97,6 +125,23 @@ const PhotoDetailPage = () => {
       }
     } catch {}
   }, [contactForm]);
+
+  // 获取当前语言设置
+  useEffect(() => {
+    setCurrentLanguage(getCurrentLanguage());
+    
+    // 监听语言变化
+    const handleLanguageChange = () => {
+      setCurrentLanguage(getCurrentLanguage());
+    };
+    
+    // 监听localStorage变化
+    window.addEventListener('storage', handleLanguageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleLanguageChange);
+    };
+  }, []);
 
   const handleContactChange = (changed: any, all: any) => {
     setContactInfo(all);
@@ -287,7 +332,7 @@ const PhotoDetailPage = () => {
                     lineHeight: '1.5', 
                     marginBottom: '0' 
                   }}>
-                    {photoInfo.description || '暂无描述'}
+                    {parseMultiLanguageDescription(photoInfo.description || '暂无描述', currentLanguage)}
                   </Paragraph>
                   
                   {/* 图片信息 */}

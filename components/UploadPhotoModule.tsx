@@ -106,7 +106,7 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
           name="description"
           label="图片描述"
         >
-          <TextArea rows={4} placeholder="请输入图片描述" />
+          <TextArea rows={2} placeholder="请输入图片描述。如果留空，将自动由AI生成三语的图片描述" />
         </Form.Item>
 
         <Form.Item label="售价">

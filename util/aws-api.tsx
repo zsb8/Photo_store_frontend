@@ -1,5 +1,70 @@
 import { prepareGetRequest, preparePostRequest } from "@/util/request-helper";
 const urlprefix = process.env.NEXT_PUBLIC_URLPREFIX ?? "";
+
+/**
+ * 如果图像高度超过指定值，则按比例缩放图像
+ * @param base64Data - Base64编码的图片数据
+ * @param maxHeight - 最大高度
+ * @returns Promise<string> - 缩放后的Base64图片数据
+ */
+async function resizeImageIfNeeded(base64Data: string, maxHeight: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            // 如果图像高度小于等于最大高度，直接返回原始数据
+            if (img.height <= maxHeight) {
+                resolve(base64Data);
+                return;
+            }
+            // 计算新的宽度，保持宽高比
+            const aspectRatio: number = img.width / img.height;
+            const newWidth: number = Math.round(maxHeight * aspectRatio);
+            // 创建canvas进行图像缩放
+            const canvas: HTMLCanvasElement = document.createElement('canvas');
+            const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d');
+            if (!ctx) {
+                reject(new Error('无法创建canvas上下文'));
+                return;
+            }
+            canvas.width = newWidth;
+            canvas.height = maxHeight;
+            // 绘制缩放后的图像
+            ctx.drawImage(img, 0, 0, newWidth, maxHeight);
+            
+            // 检测原始图片格式，保持相同格式
+            let mimeType = 'image/jpeg';
+            let quality = 0.85; // 提高质量以确保OpenAI能正确识别图像
+            
+            // 如果原始数据包含格式信息，尝试保持原格式
+            if (base64Data.startsWith('data:')) {
+                const mimeMatch = base64Data.match(/data:([^;]+)/);
+                if (mimeMatch) {
+                    mimeType = mimeMatch[1];
+                    // 对于PNG，使用更高的质量
+                    if (mimeType === 'image/png') {
+                        quality = 0.9;
+                    }
+                }
+            }
+            
+            // 转换为base64，移除data URL前缀，只保留base64数据
+            const fullDataUrl = canvas.toDataURL(mimeType, quality);
+            const resizedBase64 = fullDataUrl.split(',')[1]; // 移除 "data:image/xxx;base64," 前缀
+            resolve(resizedBase64);
+        };
+        img.onerror = () => {
+            reject(new Error('图像加载失败'));
+        };
+        
+        // 设置图像源 - 确保base64Data有正确的data URL格式
+        let imageSrc = base64Data;
+        if (!base64Data.startsWith('data:')) {
+            // 如果没有data URL前缀，添加默认的
+            imageSrc = `data:image/jpeg;base64,${base64Data}`;
+        }
+        img.src = imageSrc;
+    });
+}
 // 图片上传接口类型定义
 interface UploadPhotoRequest {
     photo_data: string;  // Base64编码的图片数据
@@ -65,37 +130,68 @@ export async function upload_photo(
             throw new Error("上传响应中缺少 record_id");
         }
         
-        const record_id = result.result.record_id;
-        console.log("Parameters being passed to save_photo_settings:", {
-            filename,
-            title,
-            description,
-            prices,
-            record_id,
-            size,
-            topic,
-            type,
-            place,
-            photo_year,
-        });
-        
-        const saveSettingsResult = await save_photo_settings(
-            filename,
-            title,
-            description,
-            prices,
-            record_id,
-            size,
-            topic,
-            type,
-            place,
-            photo_year
-        );
-        
-        if (!saveSettingsResult.success) {
-            console.error("Photo uploaded but settings save failed:", saveSettingsResult.message);
-            console.error("Full error details:", saveSettingsResult);
-            // 即使设置保存失败，图片上传仍然成功
+
+        // 如果description为空，则使用AI生成图片描述
+        if(!description){
+            console.log("!!!!! ======  description is empty,将高度缩到512，宽度按比例缩放")
+            try {
+                // 如果图像高度 > 512，则将高度缩到512，宽度按比例缩放， 依然得到base64的photoData数据
+                const resizedPhotoData = await resizeImageIfNeeded(photoData, 384);
+                console.log("Resized photo data size for AI:", resizedPhotoData.length);
+                
+                // 检查压缩后的数据大小，如果仍然太大，进一步压缩
+                let finalPhotoData = resizedPhotoData;
+                // if (resizedPhotoData.length > 50000) { // 如果大于50KB，进一步压缩
+                //     console.log("!!!!===压缩处理后的文件长度仍然大于50KB，进一步压缩...");
+                //     console.log("Photo still too large for AI, applying additional compression...");
+                //     finalPhotoData = await resizeImageIfNeeded(resizedPhotoData, 256); // 进一步缩小到256px高度
+                // }
+                
+                // 添加质量检查：确保压缩后的图像仍然有足够的信息供OpenAI识别
+                console.log("质量检查Final compressed data length:", finalPhotoData.length);
+                console.log("质量检查Original file size:", photoData.length, "Compressed:", finalPhotoData.length, "Compression ratio:", (finalPhotoData.length / photoData.length * 100).toFixed(2) + "%");
+                
+                // 添加图像质量评估
+                const compressionRatio = (finalPhotoData.length / photoData.length * 100);
+                if (compressionRatio < 1) {
+                    console.log("⚠️ 警告：压缩比过低，可能影响图像质量");
+                } else if (compressionRatio < 5) {
+                    console.log("✅ 压缩比适中，图像质量应该良好");
+                } else {
+                    console.log("ℹ️ 压缩比较高，图像质量可能较好");
+                }
+                
+                const openai_photo_desc_multi_language_result = await openai_photo_desc_multi_language(finalPhotoData, filename);
+                console.log("!!!!!========openai_photo_desc_multi_language_result", openai_photo_desc_multi_language_result)
+                description = JSON.stringify(openai_photo_desc_multi_language_result) ;
+            } catch (aiError) {
+                console.error("AI description generation failed:", aiError);
+                // 如果AI描述生成失败，设置一个默认描述
+                description = JSON.stringify({
+                    ENG: "Photo description unavailable",
+                    FRA: "Description de photo non disponible", 
+                    CHS: "照片描述不可用"
+                });
+            }
+        }
+        if(description){
+            const record_id = result.result.record_id;
+            const saveSettingsResult = await save_photo_settings(
+                filename,
+                title,
+                description,
+                prices,
+                record_id,
+                size,
+                topic,
+                type,
+                place,
+                photo_year
+            );
+            if (!saveSettingsResult.success) {
+                console.error("Photo uploaded but settings save failed:", saveSettingsResult.message);
+                console.error("Full error details:", saveSettingsResult);
+        }
         } else {
             console.log("Photo settings saved successfully");
         }
@@ -180,7 +276,7 @@ export async function save_photo_settings(
     place?: string,
     photo_year?: string
 ): Promise<SavePhotoSettingsResponse> {
-    console.log("!!!!=====save_photo_settings", filename, title, description, prices, record_id);
+    console.log("!!!!=====开始保存图片属性save_photo_settings", filename, title, prices, record_id);
     const saveUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/save_photo_settings`;
     const saveData: SavePhotoSettingsRequest = {
         data: {
@@ -446,8 +542,57 @@ export async function upload_bigphoto(
             throw new Error(`S3 upload failed: ${response.status} ${response.statusText}`);
         }
 
+        console.log("!!!!!!!=========注意看图片描述是否是空的：", description);
+        // 如果description为空，则使用AI生成图片描述
+        if(!description){
+            console.log("!!!!! ======大图片处理=====将File转换为base64并缩放到512高度")
+            try {
+                // 将File对象转换为base64数据
+                const photoData = await fileToBase64(file);
+                console.log("!!!!====原始文件长度为:", photoData.length);
+                
+                // 如果图像高度 > 512，则将高度缩到512，宽度按比例缩放
+                const resizedPhotoData = await resizeImageIfNeeded(photoData, 512);
+                console.log("!!!!===压缩处理后的文件长度为:", resizedPhotoData.length);
+                
+                // 检查压缩后的数据大小，如果仍然太大，进一步压缩
+                let finalPhotoData = resizedPhotoData;
+                // if (resizedPhotoData.length > 50000) { // 如果大于50KB，进一步压缩
+                //     console.log("!!!!===压缩处理后的文件长度仍然大于50KB，进一步压缩...");
+                //     finalPhotoData = await resizeImageIfNeeded(resizedPhotoData, 256); // 进一步缩小到256px高度
+                // }
+                
+                // 添加质量检查：确保压缩后的图像仍然有足够的信息供OpenAI识别
+                console.log("!!!!===最终压缩数据长度:", finalPhotoData.length);
+                console.log("!!!!===原始文件大小:", photoData.length, "压缩后:", finalPhotoData.length, "压缩比:", (finalPhotoData.length / photoData.length * 100).toFixed(2) + "%");
+                
+                // 添加图像质量评估
+                const compressionRatio = (finalPhotoData.length / photoData.length * 100);
+                if (compressionRatio < 1) {
+                    console.log("⚠️ 警告：压缩比过低，可能影响图像质量");
+                } else if (compressionRatio < 5) {
+                    console.log("✅ 压缩比适中，图像质量应该良好");
+                } else {
+                    console.log("ℹ️ 压缩比较高，图像质量可能较好");
+                }
+                
+                const openai_photo_desc_multi_language_result = await openai_photo_desc_multi_language(finalPhotoData, filename);
+                console.log("!!!!!========送给OPENAI后的得到的结果是:", openai_photo_desc_multi_language_result)
+                description = JSON.stringify(openai_photo_desc_multi_language_result) ;
+            } catch (aiError) {
+                console.error("!!!===完蛋了坏了坏了坏了，AI description generation failed:", aiError);
+                // 如果AI描述生成失败，设置一个默认描述
+                description = JSON.stringify({
+                    ENG: "AI Photo description unavailable",
+                    FRA: "AI Description de photo non disponible", 
+                    CHS: "AI生成照片描述失败"
+                });
+            }
+        }
+        console.log("!!!!!!!=========第二次注意看图片描述是否是空的：", description);
         // 直传成功后，保存图片设置到DynamoDB（record_id未知，省略）
-        try {
+        if(description){
+            try {
             const saveSettingsResult = await save_photo_settings(
                 filename,
                 title,
@@ -463,18 +608,24 @@ export async function upload_bigphoto(
             if (!saveSettingsResult.success) {
                 console.warn('Big photo uploaded but settings save failed:', saveSettingsResult.message);
             }
-        } catch (e) {
-            console.warn('Failed to save settings after big photo upload:', e);
+            } catch (e) {
+                console.warn('Failed to save settings after big photo upload:', e);
+            }
+            const photoUrl = bucket && key ? `https://${bucket}.s3.amazonaws.com/${key}` : url.split('?')[0];
+            return {
+                success: true,
+                message: '图片上传成功',
+                photo_url: photoUrl,
+                file_name: filename
+            };
+        }else{
+            return {
+                success: false,
+                message: '图片上传成功但是保存失败因为没有存在图像描述',
+                file_name: filename
+            };
         }
 
-        const photoUrl = bucket && key ? `https://${bucket}.s3.amazonaws.com/${key}` : url.split('?')[0];
-
-        return {
-            success: true,
-            message: '图片上传成功',
-            photo_url: photoUrl,
-            file_name: filename
-        };
     } catch (error) {
         console.error('upload_bigphoto ERROR:', error);
         return {
@@ -775,6 +926,18 @@ interface DeletePhotoResponse {
     result: string;
 }
 
+// AI描述相关接口类型定义
+interface AIPhotoDescRequest {
+    photo_data: string;
+    file_name: string;
+}
+
+interface AIPhotoDescResponse {
+    ENG: string;
+    FRA: string;
+    CHS: string;
+}
+
 /**
  * 从DynamoDB和S3删除图片
  * @param recordId - 图片记录ID
@@ -837,3 +1000,32 @@ export async function delete_photo_from_dynamodb_s3(recordId: string): Promise<D
 }
 
 
+export async function openai_photo_desc_multi_language(photo_data: string, file_name: string): Promise<AIPhotoDescResponse> {
+    const createPhotoDescUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/openai_photo_desc_multi_language`;
+    try{
+        console.log("!!!!=====开始送给AI生成图片描述");
+        const requestData: AIPhotoDescRequest = {
+            photo_data: photo_data,
+            file_name: file_name
+        };
+        const requestParams = preparePostRequest(JSON.stringify(requestData));
+        const response = await fetch(createPhotoDescUrl, requestParams);
+        const result = await response.json();
+        const jsonObj: AIPhotoDescResponse = JSON.parse(result.result);
+        if (!jsonObj.ENG || !jsonObj.FRA || !jsonObj.CHS) {
+            throw new Error('AI生成图片描述失败');
+        }
+        const en: string = jsonObj.ENG;
+        const fra: string = jsonObj.FRA;
+        const chs: string = jsonObj.CHS;
+        return {
+            ENG: en,
+            FRA: fra,
+            CHS: chs
+        };
+    }catch(error){
+        console.error("!!!!=====AI生成图片描述失败",error);
+        throw new Error(error instanceof Error ? error.message : 'AI生成图片描述失败');
+    }
+       
+}
