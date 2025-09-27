@@ -9,6 +9,7 @@ import { RouteGuard } from '../components/route-guard';
 import UploadPhotoModule from '../components/UploadPhotoModule';
 import EditPhotosModule from '../components/EditPhotosModule';
 import ViewOrdersModule from '../components/ViewOrdersModule';
+import { extractDateTaken, extractImageExifInfo, formatExifInfo, formatExifInfoReadable, parseExifInfoFromJson } from '../util/image-exif-utils';
 
 const { Header, Sider, Content } = Layout;
 const { TextArea } = Input;
@@ -220,6 +221,7 @@ const PhotosBackendManagement: React.FC = () => {
     setSelectedMenu(key);
   };
 
+
   // 处理图片上传（自动判断大小选择接口）
   const handlePhotoUpload = useCallback(async (values: any) => {
     try {
@@ -240,6 +242,19 @@ const PhotosBackendManagement: React.FC = () => {
       const isLargeFile = fileSizeMB >= 2;
       
       console.log(`文件大小: ${fileSizeMB.toFixed(2)}MB, 使用${isLargeFile ? '大图' : '小图'}上传接口`);
+
+      // 提取图片拍摄日期
+      console.log('正在提取图片拍摄日期...');
+      const dateTaken = await extractDateTaken(file);
+      if (dateTaken) {
+        console.log('提取到拍摄日期:', dateTaken);
+      } else {
+        console.log('未找到拍摄日期信息');
+      }
+
+      // 可选：提取完整的EXIF信息
+      const exifInfo = await extractImageExifInfo(file);
+      console.log('完整EXIF信息:', formatExifInfo(exifInfo));
 
       // 开始上传
       setIsUploading(true);
@@ -265,7 +280,9 @@ const PhotosBackendManagement: React.FC = () => {
             values.metaTopic,
             values.metaType,
             values.metaPlace,
-            values.metaYear ? String(values.metaYear) : undefined
+            values.metaYear ? String(values.metaYear) : undefined,
+            formatExifInfo(exifInfo)
+            
           );
         } else {
           // 小图：使用upload_photo（Base64）
@@ -284,7 +301,8 @@ const PhotosBackendManagement: React.FC = () => {
             values.metaTopic,
             values.metaType,
             values.metaPlace,
-            values.metaYear ? String(values.metaYear) : undefined
+            values.metaYear ? String(values.metaYear) : undefined,
+            formatExifInfo(exifInfo)
           );
         }
         

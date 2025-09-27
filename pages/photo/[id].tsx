@@ -9,6 +9,7 @@ import ShoppingCart from "../../components/ShoppingCart";
 import ImagePreviewModal from "../../components/ImagePreviewModal";
 import styles from "../../styles/home.module.css";
 import { get_photo_info } from "../../util/aws-api";
+import { parseExifInfoFromJson, ImageExifInfo } from "../../util/image-exif-utils";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -62,6 +63,7 @@ interface PhotoInfoData {
   type?: string;
   place?: string;
   photo_year?: string;
+  exifInfo?: string;
 }
 
 const PhotoDetailPage = () => {
@@ -321,12 +323,12 @@ const PhotoDetailPage = () => {
                 </div>
                 
                 <div>
-                  <Title level={3} style={{ 
+                  {/* <Title level={3} style={{ 
                     marginBottom: '8px',
                     fontSize: '24px'
                   }}>
                     {(photoInfo.title || photoInfo.filename)?.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '')}
-                  </Title>
+                  </Title> */}
                   <Paragraph style={{ 
                     fontSize: '14px', 
                     lineHeight: '1.5', 
@@ -338,8 +340,8 @@ const PhotoDetailPage = () => {
                   {/* 图片信息 */}
                   <div style={{ marginTop: '16px', fontSize: '12px', color: '#666' }}>
                     <div>图片ID: {photoInfo.id}</div>
-                    <div>上传时间: {new Date(photoInfo.upload_datetime).toLocaleString()}</div>
-                    <div>设置时间: {new Date(photoInfo.setting_datetime).toLocaleString()}</div>
+                    {/* <div>上传时间: {new Date(photoInfo.upload_datetime).toLocaleString()}</div>
+                    <div>设置时间: {new Date(photoInfo.setting_datetime).toLocaleString()}</div> */}
                     {photoInfo.size && (
                       <div>尺寸: {photoInfo.size}</div>
                     )}
@@ -352,9 +354,49 @@ const PhotoDetailPage = () => {
                     {photoInfo.place && (
                       <div>拍摄地点: {photoInfo.place}</div>
                     )}
-                    {photoInfo.photo_year && (
+                    {/* {photoInfo.photo_year && (
                       <div>拍摄时间（年）: {photoInfo.photo_year}</div>
-                    )}
+                    )} */}
+                    {photoInfo.exifInfo && (() => {
+                      try {
+                        const exifData: ImageExifInfo = parseExifInfoFromJson(photoInfo.exifInfo);
+                        return (
+                          <div style={{ marginTop: '2px' }}>
+                            {/* <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>EXIF信息:</div> */}
+                            {exifData.dateTaken && (
+                              <div>拍摄日期: {exifData.dateTaken}</div>
+                            )}
+                            {/* {exifData.make && exifData.model && (
+                              <div>相机: {exifData.make} {exifData.model}</div>
+                            )}
+                            {exifData.width && exifData.height && (
+                              <div>尺寸: {exifData.width} × {exifData.height}</div>
+                            )}
+                            {exifData.iso && (
+                              <div>ISO: {exifData.iso}</div>
+                            )}
+                            {exifData.aperture && (
+                              <div>光圈: f/{exifData.aperture}</div>
+                            )}
+                            {exifData.shutterSpeed && (
+                              <div>快门: 1/{Math.round(1/Number(exifData.shutterSpeed))}s</div>
+                            )}
+                            {exifData.focalLength && (
+                              <div>焦距: {exifData.focalLength}mm</div>
+                            )}
+                            {exifData.flash && (
+                              <div>闪光灯: {String(exifData.flash) === '1' ? '开启' : '关闭'}</div>
+                            )}
+                            {exifData.whiteBalance && (
+                              <div>白平衡: {String(exifData.whiteBalance) === '1' ? '自动' : '手动'}</div>
+                            )} */}
+                          </div>
+                        );
+                      } catch (error) {
+                        console.warn('解析EXIF信息失败:', error);
+                        return null;
+                      }
+                    })()}
                   </div>
                 </div>
               </div>

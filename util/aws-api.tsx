@@ -97,7 +97,8 @@ export async function upload_photo(
     topic?: string,
     type?: string,
     place?: string,
-    photo_year?: string
+    photo_year?: string,
+    exifInfo?:string
 ): Promise<UploadPhotoResponse> {
     const uploadUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/upload_photo`;
     
@@ -186,7 +187,8 @@ export async function upload_photo(
                 topic,
                 type,
                 place,
-                photo_year
+                photo_year,
+                exifInfo
             );
             if (!saveSettingsResult.success) {
                 console.error("Photo uploaded but settings save failed:", saveSettingsResult.message);
@@ -247,6 +249,7 @@ interface SavePhotoSettingsRequest {
         type?: string;
         place?: string;
         photo_year?: string;
+        exifInfo?: string;
     };
 }
 
@@ -274,9 +277,11 @@ export async function save_photo_settings(
     topic?: string,
     type?: string,
     place?: string,
-    photo_year?: string
+    photo_year?: string,
+    exifInfo?:string
 ): Promise<SavePhotoSettingsResponse> {
     console.log("!!!!=====开始保存图片属性save_photo_settings", filename, title, prices, record_id);
+    console.log("!!!!=====我不确定这准备提交给API的是否是含有数字的exifInfo", exifInfo);
     const saveUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/save_photo_settings`;
     const saveData: SavePhotoSettingsRequest = {
         data: {
@@ -293,7 +298,8 @@ export async function save_photo_settings(
             topic: topic,
             type: type,
             place: place,
-            photo_year: photo_year
+            photo_year: photo_year,
+            exifInfo: exifInfo
         },
     };
     console.log("Saving photo settings:", saveData);
@@ -514,7 +520,8 @@ export async function upload_bigphoto(
     topic?: string,
     type?: string,
     place?: string,
-    photo_year?: string
+    photo_year?: string,
+    exifInfo?:string
 ): Promise<UploadPhotoResponse> {
     console.log("!!!!=====upload_bigphoto START");
     console.log("File:", { name: file.name, size: file.size, type: file.type });
@@ -603,7 +610,8 @@ export async function upload_bigphoto(
                 topic,
                 type,
                 place,
-                photo_year
+                photo_year,
+                exifInfo
             );
             if (!saveSettingsResult.success) {
                 console.warn('Big photo uploaded but settings save failed:', saveSettingsResult.message);
