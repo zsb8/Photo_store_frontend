@@ -924,7 +924,7 @@ const PhotosBackendManagement: React.FC = () => {
 
             <Form.Item
               name="description"
-              label="图片描述"
+              label="图片描述（须标准JSON格式）"
             >
               <TextArea rows={4} placeholder="请输入图片描述" />
             </Form.Item>

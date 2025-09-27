@@ -53,7 +53,7 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
       >
         <Form.Item
           name="image"
-          label="选择图片"
+          label="选择图片(不大于10M)"
           rules={[{ required: true, message: '请选择图片文件' }]}
         >
           <Upload

@@ -13,7 +13,7 @@ const menuItems: MenuProps["items"] = [
   { key: "/print-store", label: <Link href="/print-store">购买</Link> },
   { key: "/about", label: <Link href="/about">作者</Link> },
   { key: "/contact", label: <Link href="/contact">联系</Link> },
-  { key: "/photos-backend-management", label: <Link href="/photos-backend-management">管理</Link> }
+  { key: "/photos-backend-management", label: <Link href="/photos-backend-management">编辑</Link> }
 ];
 
 const languageOptions = [
