@@ -98,7 +98,8 @@ export async function upload_photo(
     type?: string,
     place?: string,
     photo_year?: string,
-    exifInfo?:string
+    exifInfo?:string,
+    filename_id?:string
 ): Promise<UploadPhotoResponse> {
     const uploadUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/upload_photo`;
     
@@ -188,7 +189,8 @@ export async function upload_photo(
                 type,
                 place,
                 photo_year,
-                exifInfo
+                exifInfo,
+                filename_id
             );
             if (!saveSettingsResult.success) {
                 console.error("Photo uploaded but settings save failed:", saveSettingsResult.message);
@@ -250,6 +252,7 @@ interface SavePhotoSettingsRequest {
         place?: string;
         photo_year?: string;
         exifInfo?: string;
+        filename_id?: string;
     };
 }
 
@@ -278,7 +281,8 @@ export async function save_photo_settings(
     type?: string,
     place?: string,
     photo_year?: string,
-    exifInfo?:string
+    exifInfo?:string,
+    filename_id?:string
 ): Promise<SavePhotoSettingsResponse> {
     console.log("!!!!=====开始保存图片属性save_photo_settings", filename, title, prices, record_id);
     console.log("!!!!=====我不确定这准备提交给API的是否是含有数字的exifInfo", exifInfo);
@@ -299,7 +303,8 @@ export async function save_photo_settings(
             type: type,
             place: place,
             photo_year: photo_year,
-            exifInfo: exifInfo
+            exifInfo: exifInfo,
+            filename_id: filename_id
         },
     };
     console.log("Saving photo settings:", saveData);
@@ -521,7 +526,8 @@ export async function upload_bigphoto(
     type?: string,
     place?: string,
     photo_year?: string,
-    exifInfo?:string
+    exifInfo?:string,
+    filename_id?:string
 ): Promise<UploadPhotoResponse> {
     console.log("!!!!=====upload_bigphoto START");
     console.log("File:", { name: file.name, size: file.size, type: file.type });
@@ -611,7 +617,8 @@ export async function upload_bigphoto(
                 type,
                 place,
                 photo_year,
-                exifInfo
+                exifInfo,
+                filename_id
             );
             if (!saveSettingsResult.success) {
                 console.warn('Big photo uploaded but settings save failed:', saveSettingsResult.message);

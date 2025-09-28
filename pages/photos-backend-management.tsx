@@ -252,9 +252,13 @@ const PhotosBackendManagement: React.FC = () => {
         console.log('未找到拍摄日期信息');
       }
 
-      // 可选：提取完整的EXIF信息
+      // 提取完整的EXIF信息
       const exifInfo = await extractImageExifInfo(file);
       console.log('完整EXIF信息:', formatExifInfo(exifInfo));
+
+      // 提取file.name 这个文件名里面的数字串作为filename_id
+      const filename_id = file.name.match(/\d+/)?.[0] || '';
+      console.log('提取的文件名数字串:', filename_id);
 
       // 开始上传
       setIsUploading(true);
@@ -281,8 +285,8 @@ const PhotosBackendManagement: React.FC = () => {
             values.metaType,
             values.metaPlace,
             values.metaYear ? String(values.metaYear) : undefined,
-            formatExifInfo(exifInfo)
-            
+            formatExifInfo(exifInfo),
+            filename_id
           );
         } else {
           // 小图：使用upload_photo（Base64）
@@ -302,7 +306,8 @@ const PhotosBackendManagement: React.FC = () => {
             values.metaType,
             values.metaPlace,
             values.metaYear ? String(values.metaYear) : undefined,
-            formatExifInfo(exifInfo)
+            formatExifInfo(exifInfo),
+            filename_id
           );
         }
         

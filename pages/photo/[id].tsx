@@ -64,6 +64,7 @@ interface PhotoInfoData {
   place?: string;
   photo_year?: string;
   exifInfo?: string;
+  filename_id?: string;
 }
 
 const PhotoDetailPage = () => {
@@ -339,7 +340,7 @@ const PhotoDetailPage = () => {
                   
                   {/* 图片信息 */}
                   <div style={{ marginTop: '16px', fontSize: '12px', color: '#666' }}>
-                    <div>图片ID: {photoInfo.id}</div>
+                    <div>图片ID: {photoInfo.filename_id || photoInfo.id}</div>
                     {/* <div>上传时间: {new Date(photoInfo.upload_datetime).toLocaleString()}</div>
                     <div>设置时间: {new Date(photoInfo.setting_datetime).toLocaleString()}</div> */}
                     {photoInfo.size && (
