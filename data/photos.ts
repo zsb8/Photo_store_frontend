@@ -7,6 +7,7 @@ export interface PhotoSize {
 export interface Photo {
   id: number;
   uniqueId: string;
+  filename_id?: string;
   src: string;
   alt: string;
   sizes: PhotoSize[];

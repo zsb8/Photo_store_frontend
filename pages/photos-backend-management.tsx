@@ -87,6 +87,7 @@ const PhotosBackendManagement: React.FC = () => {
             return {
               id: item.id || `photo_${index}`, // 使用API返回的真实ID
               uniqueId: item.id || `photo_${index}`,
+              filename_id: item.filename_id, // 从DynamoDB获取filename_id
               src: presignedUrlMap.get(item.id) || item.s3_newsize_path || `/placeholder-${index + 1}.jpg`,
               alt: item.title || item.filename || `Photo ${index + 1}`,
               sizes: [
@@ -359,18 +360,19 @@ const PhotosBackendManagement: React.FC = () => {
                 const mediumPrice = item.prices?.medium?.S ? parseFloat(item.prices.medium.S) : 10;
                 const largePrice = item.prices?.large?.S ? parseFloat(item.prices.large.S) : 20;
                 
-                return {
-                  id: item.id || `photo_${index}`, // 使用API返回的真实ID
-                  uniqueId: item.id || `photo_${index}`,
-                  src: presignedUrlMap.get(item.id) || item.s3_newsize_path || `/placeholder-${index + 1}.jpg`,
-                  alt: item.title || item.filename || `Photo ${index + 1}`,
-                  sizes: [
-                    { size: 'small', label: '小图片', price: smallPrice },
-                    { size: 'medium', label: '中图片', price: mediumPrice },
-                    { size: 'large', label: '大图片', price: largePrice }
-                  ],
-                  description: item.description || '暂无描述'
-                };
+              return {
+                id: item.id || `photo_${index}`, // 使用API返回的真实ID
+                uniqueId: item.id || `photo_${index}`,
+                filename_id: item.filename_id, // 从DynamoDB获取filename_id
+                src: presignedUrlMap.get(item.id) || item.s3_newsize_path || `/placeholder-${index + 1}.jpg`,
+                alt: item.title || item.filename || `Photo ${index + 1}`,
+                sizes: [
+                  { size: 'small', label: '小图片', price: smallPrice },
+                  { size: 'medium', label: '中图片', price: mediumPrice },
+                  { size: 'large', label: '大图片', price: largePrice }
+                ],
+                description: item.description || '暂无描述'
+              };
               });
               
               setPhotoList(convertedPhotos);
@@ -480,6 +482,7 @@ const PhotosBackendManagement: React.FC = () => {
               return {
                 id: item.id || `photo_${index}`,
                 uniqueId: item.id || `photo_${index}`,
+                filename_id: item.filename_id, // 从DynamoDB获取filename_id
                 src: presignedUrlMap.get(item.id) || item.s3_newsize_path || `/placeholder-${index + 1}.jpg`,
                 alt: item.title || item.filename || `Photo ${index + 1}`,
                 sizes: [
@@ -551,6 +554,7 @@ const PhotosBackendManagement: React.FC = () => {
               return {
                 id: item.id || `photo_${index}`, // 使用API返回的真实ID
                 uniqueId: item.id || `photo_${index}`,
+                filename_id: item.filename_id, // 从DynamoDB获取filename_id
                 src: presignedUrlMap.get(item.id) || item.s3_newsize_path || `/placeholder-${index + 1}.jpg`,
                 alt: item.title || item.filename || `Photo ${index + 1}`,
                 sizes: [
@@ -840,6 +844,7 @@ const PhotosBackendManagement: React.FC = () => {
                     return {
                       id: item.id || `photo_${index}`,
                       uniqueId: item.id || `photo_${index}`,
+                      filename_id: item.filename_id, // 从DynamoDB获取filename_id
                       src: presignedUrlMap.get(item.id) || item.s3_newsize_path || `/placeholder-${index + 1}.jpg`,
                       alt: item.title || item.filename || `Photo ${index + 1}`,
                       sizes: [

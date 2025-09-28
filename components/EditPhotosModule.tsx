@@ -31,9 +31,9 @@ const EditPhotosModule: React.FC<EditPhotosModuleProps> = ({ photoList, onRefres
     },
     {
       title: '图片ID',
-      dataIndex: 'id',
       key: 'id',
       width: 80,
+      render: (photo: Photo) => photo.filename_id || photo.id,
     },
     {
       title: '标题',
