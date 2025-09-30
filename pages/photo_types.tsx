@@ -15,6 +15,7 @@ interface PhotoSettingItem {
   description?: string;
   s3_newsize_path: string;
   type?: string;
+  topic?: string;
 }
 
 export default function PhotoTypesPage() {
@@ -38,6 +39,7 @@ export default function PhotoTypesPage() {
           description: s.description,
           s3_newsize_path: presignedMap.get(s.id) || s.s3_newsize_path || "",
           type: s.type,
+          topic: s.topic,
         }));
         setPhotos(list);
       } finally {
@@ -47,17 +49,22 @@ export default function PhotoTypesPage() {
     load();
   }, []);
 
-  const grouped = useMemo(() => {
-    const map: Record<string, PhotoSettingItem[]> = {};
+  // 按主题分组，并在每个主题下聚合所有子类(type)
+  const topicGrouped = useMemo(() => {
+    const map: Record<string, { items: PhotoSettingItem[]; subTypes: string[] } > = {};
     for (const p of photos) {
-      const key = p.type && typeof p.type === "string" && p.type.trim().length > 0 ? p.type : "other";
-      if (!map[key]) map[key] = [];
-      map[key].push(p);
+      const topic = p.topic && typeof p.topic === "string" && p.topic.trim().length > 0 ? p.topic : "其他";
+      if (!map[topic]) map[topic] = { items: [], subTypes: [] };
+      map[topic].items.push(p);
+      const t = p.type && typeof p.type === "string" && p.type.trim().length > 0 ? p.type : "未分类";
+      if (!map[topic].subTypes.includes(t)) map[topic].subTypes.push(t);
     }
+    // 对子类做一下排序
+    Object.values(map).forEach(v => v.subTypes.sort());
     return map;
   }, [photos]);
 
-  const keys = useMemo(() => Object.keys(grouped).sort(), [grouped]);
+  const topics = useMemo(() => Object.keys(topicGrouped).sort(), [topicGrouped]);
 
   return (
     <>
@@ -71,31 +78,57 @@ export default function PhotoTypesPage() {
             <div style={{ textAlign: "center", padding: 40 }}>
               <Spin size="large" />
             </div>
-          ) : keys.length === 0 ? (
+          ) : topics.length === 0 ? (
             <Empty description="暂无图片" />
           ) : (
             <Row gutter={[24, 24]}>
-              {keys.map((k) => (
-                <Col xs={24} sm={24} md={8} lg={8} key={k}>
+              {topics.map((topic) => (
+                <Col xs={24} sm={24} md={24} lg={24} key={topic}>
                   <div style={{ marginBottom: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                      <Title level={4} style={{ margin: 0 }}>{k}</Title>
-                      <Tag color="blue">{grouped[k].length}</Tag>
-                      <Link href={`/photo/type/${encodeURIComponent(k)}`}>查看该分类</Link>
+                    {/* 第一行：主题名字 */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                      <Title level={4} style={{ margin: 0 }}>{topic}</Title>
+                      <Tag color="blue">{topicGrouped[topic].items.length}</Tag>
                     </div>
-                    <Row gutter={[16, 16]}>
-                      {grouped[k].slice(0, 1).map((p) => (
-                        <Col xs={24} key={p.id}>
-                          <div style={{ position: "relative", width: 320, height: 200, borderRadius: 8, overflow: "hidden", background: "#f0f0f0", margin: '0 auto', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }} onContextMenu={(e) => e.preventDefault()}>
-                            {p.s3_newsize_path ? (
-                              <Image src={p.s3_newsize_path} alt={p.title || p.filename} fill style={{ objectFit: "contain" }} draggable={false} onContextMenu={(e) => e.preventDefault()} />
-                            ) : (
-                              <div style={{ height: 200, background: "#f5f5f5" }} />
-                            )}
+                    {/* 第二行：该主题下所有子类（横向排列；每个子类仅展示1张样例） */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
+                      {topicGrouped[topic].subTypes.map((sub) => {
+                        const subItems = topicGrouped[topic].items.filter(p => {
+                          const t = p.type && typeof p.type === "string" && p.type.trim().length > 0 ? p.type : "未分类";
+                          return t === sub;
+                        });
+                        if (subItems.length === 0) return null;
+                        const p = subItems[0];
+                        return (
+                          <div key={sub} style={{ width: 180, display: "flex", flexDirection: "column", gap: 6 }}>
+                            <Tag color="geekblue" style={{ width: "fit-content" }}>
+                              <Link href={`/photo/type/${encodeURIComponent(sub)}`}>
+                                {sub}（{subItems.length}）
+                              </Link>
+                            </Tag>
+                            <Link href={`/photo/type/${encodeURIComponent(sub)}`}>
+                              <div
+                                onContextMenu={(e) => e.preventDefault()}
+                                style={{ position: "relative", width: 180, height: 110, borderRadius: 6, overflow: "hidden", background: "#f0f0f0", cursor: "pointer", userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}
+                              >
+                                {p?.s3_newsize_path ? (
+                                  <Image
+                                    src={p.s3_newsize_path}
+                                    alt={p.title || p.filename}
+                                    fill
+                                    style={{ objectFit: "cover" }}
+                                    draggable={false}
+                                    onContextMenu={(e) => e.preventDefault()}
+                                  />
+                                ) : (
+                                  <div style={{ width: 180, height: 110, background: "#f5f5f5" }} />
+                                )}
+                              </div>
+                            </Link>
                           </div>
-                        </Col>
-                      ))}
-                    </Row>
+                        );
+                      })}
+                    </div>
                   </div>
                 </Col>
               ))}

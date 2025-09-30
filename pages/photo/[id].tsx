@@ -49,6 +49,7 @@ interface PhotoInfoData {
     small: { S: string };
     large: { S: string };
     medium: { S: string };
+    special?: { S: string };
   };
   s3_path: string;
   setting_datetime: string;
@@ -71,7 +72,7 @@ const PhotoDetailPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const { addToCart, isInCart, cartItems, removeFromCart, clearCart, markAsPurchased } = useCart();
-  const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large' | 'special'>('medium');
   const [photoInfo, setPhotoInfo] = useState<PhotoInfoData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -181,6 +182,25 @@ const PhotoDetailPage = () => {
     }
   };
 
+  // 当图片信息变化时，若当前选择尺寸无效，则自动选择第一个有效尺寸（价格>0）
+  useEffect(() => {
+    if (!photoInfo) return;
+    try {
+      const computedOptions = [
+        { size: 'small' as const, price: parseFloat(photoInfo.prices.small.S) },
+        { size: 'medium' as const, price: parseFloat(photoInfo.prices.medium.S) },
+        { size: 'large' as const, price: parseFloat(photoInfo.prices.large.S) },
+        ...(photoInfo.prices.special?.S ? [{ size: 'special' as const, price: parseFloat(photoInfo.prices.special.S) }] : [])
+      ];
+      const available = computedOptions.filter(opt => opt.price > 0);
+      if (available.length === 0) return;
+      const stillValid = available.some(opt => opt.size === selectedSize);
+      if (!stillValid) {
+        setSelectedSize(available[0].size);
+      }
+    } catch {}
+  }, [photoInfo, selectedSize]);
+
   // 加载状态
   if (loading) {
     return (
@@ -210,10 +230,14 @@ const PhotoDetailPage = () => {
   const sizeOptions = [
     { size: 'small', label: '小图片', price: parseFloat(photoInfo.prices.small.S) },
     { size: 'medium', label: '中图片', price: parseFloat(photoInfo.prices.medium.S) },
-    { size: 'large', label: '大图片', price: parseFloat(photoInfo.prices.large.S) }
+    { size: 'large', label: '大图片', price: parseFloat(photoInfo.prices.large.S) },
+    ...(photoInfo.prices.special?.S ? [{ size: 'special', label: '特殊尺寸', price: parseFloat(photoInfo.prices.special.S) }] : [])
   ];
 
-  const selectedSizeData = sizeOptions.find(s => s.size === selectedSize);
+  // 过滤掉价格为0的尺寸
+  const availableSizeOptions = sizeOptions.filter((option) => option.price > 0);
+
+  const selectedSizeData = availableSizeOptions.find(s => s.size === selectedSize);
   const currentPrice = selectedSizeData?.price || 0;
 
   const handleAddToCart = () => {
@@ -427,7 +451,7 @@ const PhotoDetailPage = () => {
                       style={{ width: '100%' }}
                     >
                       <Row gutter={[12, 12]}>
-                        {sizeOptions.map((sizeOption) => (
+                        {availableSizeOptions.map((sizeOption) => (
                           <Col span={8} key={sizeOption.size}>
                             <Card 
                               size="small"
@@ -436,7 +460,7 @@ const PhotoDetailPage = () => {
                                 border: selectedSize === sizeOption.size ? '2px solid #1890ff' : '1px solid #d9d9d9',
                                 backgroundColor: selectedSize === sizeOption.size ? '#f0f8ff' : 'white'
                               }}
-                              onClick={() => setSelectedSize(sizeOption.size as 'small' | 'medium' | 'large')}
+                              onClick={() => setSelectedSize(sizeOption.size as 'small' | 'medium' | 'large' | 'special')}
                             >
                               <Text strong style={{ 
                                 fontSize: '14px', 
@@ -463,9 +487,13 @@ const PhotoDetailPage = () => {
                   {/* 当前选择的价格 */}
                   <div className={styles.priceDisplay}>
                     <Text strong style={{ fontSize: '16px' }}>当前选择: </Text>
-                    <Text style={{ fontSize: '18px', color: '#52c41a', fontWeight: 'bold' }}>
-                      {selectedSizeData?.label} - CAD ${currentPrice}
-                    </Text>
+                    {selectedSizeData ? (
+                      <Text style={{ fontSize: '18px', color: '#52c41a', fontWeight: 'bold' }}>
+                        {selectedSizeData.label} - CAD ${currentPrice}
+                      </Text>
+                    ) : (
+                      <Text type="secondary" style={{ fontSize: '14px' }}>暂无可选尺寸</Text>
+                    )}
                   </div>
                 </div>
                 
@@ -503,7 +531,7 @@ const PhotoDetailPage = () => {
                       </Col>
                     </Row>
                     <Form.Item label={<span style={{ fontSize: 12 }}>邮寄地址</span>} name="address" rules={[{ required: true, message: '请输入邮寄地址' }]} style={{ marginBottom: 8 }}> 
-                      <Input placeholder="街道、城市、省、邮编" size="small" />
+                      <Input placeholder="门牌号、街道、城市、省、邮编" size="small" />
                     </Form.Item>
                   </Form>
 
@@ -513,10 +541,10 @@ const PhotoDetailPage = () => {
                     size="large"
                     icon={<ShoppingCartOutlined />}
                     onClick={handleAddToCart}
-                    disabled={isCurrentSizeInCart()}
+                    disabled={!selectedSizeData || isCurrentSizeInCart()}
                     className={styles.purchaseButton}
                   >
-                    {getCartItem()?.purchased ? "已购买" : (isCurrentSizeInCart() ? "已加入购物车" : "立即购买")}
+                    {getCartItem()?.purchased ? "已购买" : (!selectedSizeData ? "暂不可购买" : (isCurrentSizeInCart() ? "已加入购物车" : "立即购买"))}
                   </Button>
                 </div>
               </div>

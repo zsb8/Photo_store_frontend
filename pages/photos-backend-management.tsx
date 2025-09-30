@@ -81,9 +81,9 @@ const PhotosBackendManagement: React.FC = () => {
           // 转换数据格式以匹配 Photo 接口
           const convertedPhotos: Photo[] = photoSettingsResponse.data.map((item: any, index: number) => {
             // 从价格信息中提取价格值
-            const smallPrice = item.prices?.small?.S ? parseFloat(item.prices.small.S) : 5;
-            const mediumPrice = item.prices?.medium?.S ? parseFloat(item.prices.medium.S) : 10;
-            const largePrice = item.prices?.large?.S ? parseFloat(item.prices.large.S) : 20;
+            const smallPrice = item.prices?.small?.S ? parseFloat(item.prices.small.S) : 0;
+            const mediumPrice = item.prices?.medium?.S ? parseFloat(item.prices.medium.S) : 0;
+            const largePrice = item.prices?.large?.S ? parseFloat(item.prices.large.S) : 0;
             const specialPrice = item.prices?.special?.S ? parseFloat(item.prices.special.S) : 0;
             
             return {
@@ -148,10 +148,10 @@ const PhotosBackendManagement: React.FC = () => {
   // 初始化表单默认值
   React.useEffect(() => {
     uploadForm.setFieldsValue({
-      smallPrice: 5,
-      mediumPrice: 10,
-      largePrice: 20,
-      specialPrice: 100
+      smallPrice: 1,
+      mediumPrice: 2,
+      largePrice: 3,
+      specialPrice: 0
     });
   }, [uploadForm]);
 
@@ -282,10 +282,10 @@ const PhotosBackendManagement: React.FC = () => {
             values.alt,
             values.description,
             {
-              small: values.smallPrice || 5,
-              medium: values.mediumPrice || 10,
-              large: values.largePrice || 20,
-              special: values.specialPrice ?? 100
+              small: values.smallPrice || 0,
+              medium: values.mediumPrice || 0,
+              large: values.largePrice || 0,
+              special: values.specialPrice ?? 0
             },
             values.metaSize,
             values.metaTopic,
@@ -304,10 +304,10 @@ const PhotosBackendManagement: React.FC = () => {
             values.alt, 
             values.description, 
             {
-              small: values.smallPrice || 5,
-              medium: values.mediumPrice || 10,
-              large: values.largePrice || 20,
-              special: values.specialPrice ?? 100
+              small: values.smallPrice || 0,
+              medium: values.mediumPrice || 0,
+              large: values.largePrice || 0,
+              special: values.specialPrice ?? 0
             },
             values.metaSize,
             values.metaTopic,
@@ -331,10 +331,10 @@ const PhotosBackendManagement: React.FC = () => {
         uploadForm.resetFields();
         // 重置后重新设置默认价格
         uploadForm.setFieldsValue({
-          smallPrice: 5,
-          mediumPrice: 10,
-          largePrice: 20,
-          specialPrice: 100
+          smallPrice: 0,
+          mediumPrice: 0,
+          largePrice: 0,
+          specialPrice: 0
         });
         setSelectedImage(null); // 清空选择的图片
         message.success(`图片上传成功！文件名: ${uploadResult.file_name} (${isLargeFile ? '大图直传' : '小图Base64'})`);
@@ -440,10 +440,10 @@ const PhotosBackendManagement: React.FC = () => {
         values.alt, // title 使用新的标题
         values.description, // description 使用新的描述
         {
-          small: values.smallPrice || 5,
-          medium: values.mediumPrice || 10,
-          large: values.largePrice || 20,
-          special: values.specialPrice ?? 100
+          small: values.smallPrice || 0,
+          medium: values.mediumPrice || 0,
+          large: values.largePrice || 0,
+          special: values.specialPrice ?? 0
         }, // prices 使用新的价格
         editingPhoto.id.toString() // record_id 使用图片ID，转换为字符串
       );

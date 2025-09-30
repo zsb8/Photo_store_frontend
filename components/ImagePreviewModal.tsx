@@ -5,13 +5,15 @@ interface ImagePreviewModalProps {
   imageUrl: string;
   imageAlt: string;
   onClose: () => void;
+  onImageClick?: () => void;
 }
 
 const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   isOpen,
   imageUrl,
   imageAlt,
-  onClose
+  onClose,
+  onImageClick
 }) => {
   if (!isOpen || !imageUrl) return null;
 
@@ -67,7 +69,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             WebkitUserSelect: 'none',
             WebkitTouchCallout: 'none'
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onImageClick?.(); }}
           onContextMenu={(e) => e.preventDefault()}
           draggable={false}
         />
@@ -88,7 +90,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
           letterSpacing: '0.8px',
           whiteSpace: 'nowrap'
         }}>
-          All rights reserved. For preview only
+          All rights reserved. For preview only 
         </div>
       </div>
     </div>

@@ -119,7 +119,7 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
               <InputNumber
                 min={0}
                 step={1}
-                placeholder="5"
+                placeholder="0"
                 prefix="$"
               />
             </Form.Item>
@@ -131,7 +131,7 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
               <InputNumber
                 min={0}
                 step={1}
-                placeholder="10"
+                placeholder="0"
                 prefix="$"
               />
             </Form.Item>
@@ -143,7 +143,7 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
               <InputNumber
                 min={0}
                 step={1}
-                placeholder="20"
+                placeholder="0"
                 prefix="$"
               />
             </Form.Item>
@@ -154,7 +154,7 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
               <InputNumber
                 min={0}
                 step={1}
-                placeholder="100"
+                placeholder="0"
                 prefix="$"
               />
             </Form.Item>

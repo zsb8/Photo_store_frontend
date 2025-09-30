@@ -18,6 +18,7 @@ export default function PhotoTypeListPage() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [previewAlt, setPreviewAlt] = useState<string>("");
+  const [previewId, setPreviewId] = useState<string>("");
 
   useEffect(() => {
     if (!type) return;
@@ -49,7 +50,8 @@ export default function PhotoTypeListPage() {
     load();
   }, [type]);
 
-  const openPreview = (url: string, alt: string) => {
+  const openPreview = (id: string, url: string, alt: string) => {
+    setPreviewId(id);
     setPreviewUrl(url);
     setPreviewAlt(alt);
     setIsPreviewOpen(true);
@@ -78,7 +80,7 @@ export default function PhotoTypeListPage() {
                 <Col xs={24} sm={12} md={8} lg={6} key={p.id}>
                   <div 
                     style={{ position: 'relative', width: 320, height: 200, borderRadius: 8, overflow: 'hidden', background: '#f0f0f0', cursor: 'zoom-in', margin: '0 auto' }}
-                    onClick={() => openPreview(p.url, p.title || p.filename)}
+                    onClick={() => openPreview(p.id, p.url, p.title || p.filename)}
                     onContextMenu={(e) => e.preventDefault()}
                   >
                     {p.url ? (
@@ -96,6 +98,11 @@ export default function PhotoTypeListPage() {
             imageUrl={previewUrl}
             imageAlt={previewAlt}
             onClose={() => setIsPreviewOpen(false)}
+            onImageClick={() => {
+              if (previewId) {
+                router.push(`/photo/${encodeURIComponent(previewId)}`);
+              }
+            }}
           />
         </div>
       </main>
