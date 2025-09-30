@@ -367,45 +367,17 @@ export async function get_photos_presigned_url(): Promise<PhotoGalleryResponse> 
                 "Content-Type": "application/json",
             },
         };
-        
-        console.log("Request parameters:", requestParams);
-        console.log("Making fetch request to:", galleryUrl);
-        
         const response = await fetch(galleryUrl, requestParams);
-        console.log("Response received:", response);
-        console.log("Response status:", response.status);
-        console.log("Response status text:", response.statusText);
-        console.log("Response headers:", response.headers);
-        
         const result = await response.json();
-        console.log("Response JSON parsed:", result);
-        console.log("Result type:", typeof result);
-        console.log("Result keys:", Object.keys(result));
-        
         if (!response.ok) {
             console.error("HTTP error occurred:", response.status, response.statusText);
             console.error("Error response body:", result);
             throw new Error(result.message || `HTTP ${response.status}: ${response.statusText}`);
         }
-        
         if (result.error) {
             console.error("API error in response:", result.error);
             throw new Error(result.message || result.error);
         }
-        
-        // 验证数据结构
-        console.log("Checking result.data:", result.data);
-        console.log("Data type:", typeof result.data);
-        console.log("Data length:", Array.isArray(result.data) ? result.data.length : 'Not an array');
-        
-        if (Array.isArray(result.data)) {
-            console.log("First photo item:", result.data[0]);
-            if (result.data[0]) {
-                console.log("First photo presigned_url:", result.data[0].presigned_url);
-                console.log("First photo id:", result.data[0].id);
-            }
-        }
-        
         const responseData = {
             success: true,
             message: result.message || "获取图片画廊成功",
@@ -419,22 +391,16 @@ export async function get_photos_presigned_url(): Promise<PhotoGalleryResponse> 
                 const photoDataForStorage = result.data.map((photo: PhotoGalleryItem) => ({
                     id: photo.id,
                     presigned_url: photo.presigned_url,
-                    datetime: new Date().toISOString()
+                    datetime: new Date().toISOString(),
+                    is_home_carousel: photo.is_home_carousel,
                 }));
-                
                 localStorage.setItem('photo_gallery_data', JSON.stringify(photoDataForStorage));
                 localStorage.setItem('photo_gallery_last_update', new Date().toISOString());
-                
-                console.log('Photo data saved to localStorage:', photoDataForStorage);
             } catch (storageError) {
                 console.warn('Failed to save photo data to localStorage:', storageError);
                 // 即使保存失败，也不影响API的正常返回
             }
         }
-        
-        console.log("Returning response data:", responseData);
-        console.log("!!!!=====get_photos_presigned_url SUCCESS");
-        
         return responseData;
     } catch (error) {
         console.error('!!!!=====get_photos_presigned_url ERROR');
@@ -709,6 +675,7 @@ interface PhotoGalleryItem {
     presigned_url: string;
     expires_in: number;
     title?: string;  // 添加title字段
+    is_home_carousel?: string;
 }
 
 interface PhotoGalleryResponse {
@@ -903,6 +870,32 @@ export async function get_all_photo_settings(): Promise<AllPhotoSettingsResponse
             data: [],
             count: 0
         };
+    }
+}
+
+/**
+ * 设置哪些图片用于首页滚动展示
+ * @param ids - 需要设置为首页滚动图的图片ID数组
+ * @returns { success: boolean, message: string }
+ */
+export async function set_home_carousel_photos(ids: string[]): Promise<{ success: boolean; message: string }>{
+    const setUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/set_home_carousel_photos`;
+    try {
+        const payload = { ids };
+        const requestParams = preparePostRequest(JSON.stringify(payload));
+        const response = await fetch(setUrl, requestParams);
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            const msg = (result && result.message) ? result.message : `HTTP ${response.status}: ${response.statusText}`;
+            return { success: false, message: msg };
+        }
+        if (result && result.error) {
+            return { success: false, message: result.message || result.error };
+        }
+        return { success: true, message: (result && result.message) ? result.message : '设置成功' };
+    } catch (error) {
+        return { success: false, message: error instanceof Error ? error.message : '设置首页滚动图片失败' };
     }
 }
 

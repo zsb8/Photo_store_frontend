@@ -8,6 +8,7 @@ import styles from '../styles/photos-backend-management.module.css';
 import { RouteGuard } from '../components/route-guard';
 import UploadPhotoModule from '../components/UploadPhotoModule';
 import EditPhotosModule from '../components/EditPhotosModule';
+import HomeCarouselSelector from '../components/HomeCarouselSelector';
 import ViewOrdersModule from '../components/ViewOrdersModule';
 import { extractDateTaken, extractImageExifInfo, formatExifInfo, formatExifInfoReadable, parseExifInfoFromJson } from '../util/image-exif-utils';
 
@@ -195,6 +196,11 @@ const PhotosBackendManagement: React.FC = () => {
       key: 'edit-photos',
       icon: <EditOutlined />,
       label: '编辑图片信息',
+    },
+    {
+      key: 'home-carousel',
+      icon: <PictureOutlined />,
+      label: '主页滚动图片',
     },
     {
       key: 'view-orders',
@@ -885,6 +891,11 @@ const PhotosBackendManagement: React.FC = () => {
             onOpenEdit={openEditModal}
             onDelete={handleDeletePhoto}
           />
+        );
+
+      case 'home-carousel':
+        return (
+          <HomeCarouselSelector />
         );
 
       case 'view-orders':

@@ -20,9 +20,15 @@ const SlideshowHome: React.FC = () => {
       try {
         setLoading(true);
         const resp = await get_photos_presigned_url();
+        console.log('!!!!!=====我看看获得的图片是否带有is_home_carousel信息', resp.data);
         if (resp && resp.data) {
           const list = resp.data
-            .filter((p: any) => p.presigned_url && !String(p.presigned_url).includes("error"))
+            .filter((p: any) =>
+              p.presigned_url &&
+              !String(p.presigned_url).includes("error") &&
+              p.is_home_carousel === "1"
+            )
+            .slice(0, 5)
             .map((p: any) => ({ id: p.id, presigned_url: p.presigned_url, filename: p.filename || "" }));
           setPhotos(list);
         } else {
