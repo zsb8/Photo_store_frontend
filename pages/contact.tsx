@@ -15,7 +15,7 @@ const ContactPage = () => {
         <div className={styles.container}>
           <Title level={1} style={{ textAlign: "center", marginBottom: 24 }}>联系</Title>
           <Paragraph style={{ fontSize: 16, lineHeight: 1.9 }}>
-            如果有任何疑问和建议，请随时联系李连众或通过微信：llz_989 或电子邮件：XXXX@google.com
+            如果有任何疑问和建议，请采用如下方式联系：<br></br>电子邮件：XXXX@google.com <br></br> 微信：XXX   
           </Paragraph>
         </div>
       </main>

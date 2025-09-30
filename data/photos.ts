@@ -1,5 +1,5 @@
 export interface PhotoSize {
-  size: 'small' | 'medium' | 'large';
+  size: 'small' | 'medium' | 'large' | 'special';
   label: string;
   price: number;
 }
@@ -23,7 +23,8 @@ export const photos: Photo[] = [
     sizes: [
       { size: 'small', label: '小图片', price: 0.31 },
       { size: 'medium', label: '中图片', price: 0.41 },
-      { size: 'large', label: '大图片', price: 0.51 }
+      { size: 'large', label: '大图片', price: 0.51 },
+      { size: 'special', label: '特殊尺寸', price: 0.61 }
     ],
     description: "this is a test description .....1.jpg......  only for test"
   },
@@ -35,7 +36,8 @@ export const photos: Photo[] = [
     sizes: [
       { size: 'small', label: '小图片', price: 0.41 },
       { size: 'medium', label: '中图片', price: 0.51 },
-      { size: 'large', label: '大图片', price: 0.61 }
+      { size: 'large', label: '大图片', price: 0.61 },
+      { size: 'special', label: '特殊尺寸', price: 0.71 }
     ],
     description: "this is a test description .....2.jpg......  only for test"
   },
@@ -47,7 +49,8 @@ export const photos: Photo[] = [
     sizes: [
       { size: 'small', label: '小图片', price: 0.51 },
       { size: 'medium', label: '中图片', price: 0.61 },
-      { size: 'large', label: '大图片', price: 0.71 }
+      { size: 'large', label: '大图片', price: 0.71 },
+      { size: 'special', label: '特殊尺寸', price: 0.81 }
     ],
     description: "this is a test description .....3.jpg......  only for test"
   },
@@ -59,18 +62,19 @@ export const photos: Photo[] = [
     sizes: [
       { size: 'small', label: '小图片', price: 0.61 },
       { size: 'medium', label: '中图片', price: 0.71 },
-      { size: 'large', label: '大图片', price: 0.81 }
+      { size: 'large', label: '大图片', price: 0.81 },
+      { size: 'special', label: '特殊尺寸', price: 0.91 }
     ],
     description: "this is a test description .....4.jpg......  only for test"
   },
 ];
 
-// 根据ID查找照片
+// 根据ID查找图片
 export const findPhotoById = (id: number): Photo | undefined => {
   return photos.find(photo => photo.id === id);
 };
 
-// 根据唯一ID查找照片
+// 根据唯一ID查找图片
 export const findPhotoByUniqueId = (uniqueId: string): Photo | undefined => {
   return photos.find(photo => photo.uniqueId === uniqueId);
 };

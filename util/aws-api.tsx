@@ -92,7 +92,7 @@ export async function upload_photo(
     filename: string, 
     title?: string, 
     description?: string, 
-    prices?: { small: number; medium: number; large: number },
+    prices?: { small: number; medium: number; large: number; special?: number },
     size?: string,
     topic?: string,
     type?: string,
@@ -172,13 +172,13 @@ export async function upload_photo(
                 description = JSON.stringify({
                     ENG: "Photo description unavailable",
                     FRA: "Description de photo non disponible", 
-                    CHS: "照片描述不可用"
+                    CHS: "图片描述不可用"
                 });
             }
         }
         if(description){
             const record_id = result.result.record_id;
-            const saveSettingsResult = await save_photo_settings(
+        const saveSettingsResult = await save_photo_settings(
                 filename,
                 title,
                 description,
@@ -274,7 +274,7 @@ export async function save_photo_settings(
     filename: string,
     title?: string,
     description?: string,
-    prices?: { small: number; medium: number; large: number },
+    prices?: { small: number; medium: number; large: number; special?: number },
     record_id?: string,
     size?: string,
     topic?: string,
@@ -295,7 +295,8 @@ export async function save_photo_settings(
             prices: prices ? {
                 small: prices.small.toString(),
                 medium: prices.medium.toString(),
-                large: prices.large.toString()
+                large: prices.large.toString(),
+                ...(prices.special !== undefined ? { special: prices.special.toString() } : {})
             } : undefined,
             record_id: record_id,
             size: size,
@@ -520,7 +521,7 @@ export async function upload_bigphoto(
     contentType: string,
     title?: string,
     description?: string,
-    prices?: { small: number; medium: number; large: number },
+    prices?: { small: number; medium: number; large: number; special?: number },
     size?: string,
     topic?: string,
     type?: string,
@@ -598,7 +599,7 @@ export async function upload_bigphoto(
                 description = JSON.stringify({
                     ENG: "AI Photo description unavailable",
                     FRA: "AI Description de photo non disponible", 
-                    CHS: "AI生成照片描述失败"
+                    CHS: "AI生成图片描述失败"
                 });
             }
         }
@@ -914,6 +915,7 @@ interface PhotoSettingItem {
         small: { S: string };
         large: { S: string };
         medium: { S: string };
+        special: { S: string };
     };
     s3_path: string;
     setting_datetime: string;

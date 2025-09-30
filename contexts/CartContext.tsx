@@ -116,13 +116,33 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const markAsPurchased = () => {
     console.log('=== MARK AS PURCHASED ===');
     console.log('Current cart items before marking:', cartItems);
+    let selectedIds: Array<string> | null = null;
+    if (typeof window !== 'undefined') {
+      try {
+        const savedIds = localStorage.getItem('cartSelectedIds');
+        if (savedIds) {
+          const parsed: Array<string | number> = JSON.parse(savedIds);
+          selectedIds = parsed.map(p => String(p));
+          console.log('Marking selected IDs as purchased:', selectedIds);
+        }
+      } catch (e) {
+        console.warn('Failed to parse cartItems from localStorage for marking purchased');
+      }
+    }
     setCartItems(prev => {
-      const updatedItems = prev.map(item => ({ ...item, purchased: true }));
+      const updatedItems = prev.map(item => {
+        if (selectedIds && selectedIds.length > 0) {
+          return selectedIds.includes(String(item.id)) ? { ...item, purchased: true } : item;
+        }
+        return { ...item, purchased: true };
+      });
       console.log('Updated cart items after marking:', updatedItems);
       return updatedItems;
     });
-    // 清除购物车总金额
+    // 清除选择信息与购物车总金额
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('cartSelectedIds');
+      localStorage.removeItem('cartSelectedTotal');
       localStorage.removeItem('cartTotal');
       console.log('Removed cartTotal from localStorage');
     }

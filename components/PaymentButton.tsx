@@ -148,7 +148,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
           >
                          <InputNumber
                style={{ width: '100%' }}
-               min={0.01}
+               min={1.00}
                max={10000}
                step={0.01}
                precision={2}
@@ -157,7 +157,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
              />
           </Form.Item>
           <div style={{ marginTop: '-12px', marginBottom: '16px' }}>
-            <small style={{ color: '#666' }}>不低于0.5</small>
+            <small style={{ color: '#666' }}>不低于1（货币单位）</small>
           </div>
 
           <Form.Item

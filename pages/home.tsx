@@ -169,8 +169,8 @@ export default function ReportDesigner() {
           <div style={{ marginTop: '32px', padding: '24px', background: '#f0f2f5', borderRadius: '8px' }}>
             <Title level={3}>感谢您的购买</Title>
             <Text>
-              感谢您选择我们的照片服务！我们致力于为您提供最优质的照片产品和最安全的支付体验。
-              您的满意是我们最大的动力，期待为您提供更多精彩的照片作品。
+              感谢您选择我们的图片服务！我们致力于为您提供最优质的图片产品和最安全的支付体验。
+              您的满意是我们最大的动力，期待为您提供更多精彩的图片作品。
             </Text>
           </div>
         </div>

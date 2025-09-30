@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Badge, Button, Drawer, Card, Typography, Space, Divider, message } from 'antd';
+import { Badge, Button, Drawer, Card, Typography, Space, Divider, message, Checkbox } from 'antd';
 import { ShoppingCartOutlined, DeleteOutlined, CreditCardOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
 import PhotoImage from './PhotoImage';
@@ -24,6 +24,7 @@ interface ShoppingCartProps {
 const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClearCart }) => {
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
   const router = useRouter();
 
   // 检测移动端
@@ -68,12 +69,15 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
       const sizeLabel = size === 'small' ? '小' : size === 'medium' ? '中' : '大';
       return `${shortFileName} (${sizeLabel})`;
     }
-    return item.alt || `照片 ${item.id}`;
+    return item.alt || `图片 ${item.id}`;
   };
 
   const totalAmount = items.reduce((sum, item) => sum + item.price, 0);
   const unpurchasedItems = items.filter(item => !item.purchased);
   const purchasedItems = items.filter(item => item.purchased);
+
+  const selectedUnpurchasedItems = unpurchasedItems.filter(item => selectedIds.includes(item.id));
+  const selectedTotalAmount = selectedUnpurchasedItems.reduce((sum, item) => sum + item.price, 0);
 
   // 添加调试信息
   console.log('=== SHOPPING CART DEBUG ===');
@@ -85,19 +89,39 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
   console.log('=== END SHOPPING CART DEBUG ===');
 
   const handleCheckout = () => {
-    if (unpurchasedItems.length === 0) {
-      message.warning('没有待购买的商品');
+    if (selectedUnpurchasedItems.length === 0) {
+      if (unpurchasedItems.length === 0) {
+        message.warning('没有待购买的商品');
+      } else {
+        message.warning('请选择要支付的商品');
+      }
       return;
     }
-    
-    // 将购物车数据存储到localStorage
+    // 将选择的信息存储到localStorage（不覆盖整个购物车）
     if (typeof window !== 'undefined') {
-      localStorage.setItem('cartItems', JSON.stringify(items));
-      localStorage.setItem('cartTotal', unpurchasedItems.reduce((sum, item) => sum + item.price, 0).toString());
+      localStorage.setItem('cartSelectedIds', JSON.stringify(selectedUnpurchasedItems.map(i => i.id)));
+      localStorage.setItem('cartSelectedTotal', selectedTotalAmount.toString());
     }
-    
-    // 直接跳转到购买页面，跳过登录
+    // 跳转到购买页面
     router.push('/purchase-photo');
+  };
+
+  const toggleSelect = (id: string | number, checked: boolean) => {
+    setSelectedIds(prev => {
+      if (checked) {
+        if (prev.includes(id)) return prev;
+        return [...prev, id];
+      }
+      return prev.filter(x => String(x) !== String(id));
+    });
+  };
+
+  const handleSelectAll = () => {
+    setSelectedIds(unpurchasedItems.map(i => i.id));
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds([]);
   };
 
   const formatPrice = (price: number) => {
@@ -134,14 +158,22 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
               购物车 ({unpurchasedItems.length} 件待购买, {purchasedItems.length} 件已购买)
             </span>
             {items.length > 0 && (
-              <Button 
-                type="link" 
-                danger 
-                size="small"
-                onClick={onClearCart}
-              >
-                清空购物车
-              </Button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {unpurchasedItems.length > 0 && (
+                  <Space size={8}>
+                    <Button size="small" onClick={handleSelectAll}>全选未购买</Button>
+                    <Button size="small" onClick={handleClearSelection}>清除选择</Button>
+                  </Space>
+                )}
+                <Button 
+                  type="link" 
+                  danger 
+                  size="small"
+                  onClick={onClearCart}
+                >
+                  清空购物车
+                </Button>
+              </div>
             )}
           </div>
         }
@@ -153,9 +185,17 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
           unpurchasedItems.length > 0 ? (
             <div style={{ textAlign: 'center' }}>
               <div style={{ marginBottom: '16px' }}>
-                <Text strong style={{ fontSize: '18px' }}>
-                  待支付总计: {formatPrice(unpurchasedItems.reduce((sum, item) => sum + item.price, 0))}
-                </Text>
+                {selectedUnpurchasedItems.length > 0 ? (
+                  <>
+                    <Text strong style={{ fontSize: '18px' }}>
+                      已选 {selectedUnpurchasedItems.length} 件，合计: {formatPrice(selectedTotalAmount)}
+                    </Text>
+                  </>
+                ) : (
+                  <Text type="secondary" style={{ fontSize: '14px' }}>
+                    请选择要支付的商品
+                  </Text>
+                )}
               </div>
               <Button
                 type="primary"
@@ -163,8 +203,9 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
                 icon={<CreditCardOutlined />}
                 onClick={handleCheckout}
                 style={{ width: '100%' }}
+                disabled={selectedUnpurchasedItems.length === 0}
               >
-                确定支付购物车内所有商品
+                {selectedUnpurchasedItems.length > 0 ? `支付已选 ${selectedUnpurchasedItems.length} 件` : '选择商品后可支付'}
               </Button>
             </div>
           ) : null
@@ -193,6 +234,14 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
                   flexWrap: 'wrap',
                   alignItems: 'flex-start'
                 }}>
+                  {!item.purchased && (
+                    <div style={{ paddingTop: 6 }}>
+                      <Checkbox
+                        checked={selectedIds.includes(item.id)}
+                        onChange={e => toggleSelect(item.id, e.target.checked)}
+                      />
+                    </div>
+                  )}
                   <div style={{ 
                     position: 'relative', 
                     width: '60px', 

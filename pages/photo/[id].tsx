@@ -170,6 +170,17 @@ const PhotoDetailPage = () => {
   // 获取当前图片的预授权链接
   const presignedUrl = photoInfo ? getPresignedUrlFromStorage(photoInfo.id) : null;
 
+  // 格式化 EXIF 拍摄日期为 YYYYMMDD（例如 2024-01-18T08-51-59 -> 20240118）
+  const formatExifDate = (dateStr: string): string => {
+    try {
+      const datePart = (dateStr || '').split('T')[0];
+      if (!datePart) return dateStr;
+      return datePart.replace(/-/g, '');
+    } catch {
+      return dateStr;
+    }
+  };
+
   // 加载状态
   if (loading) {
     return (
@@ -186,7 +197,7 @@ const PhotoDetailPage = () => {
   if (error || !photoInfo) {
     return (
       <div className={styles.container}>
-        <Title level={2}>照片未找到</Title>
+        <Title level={2}>图片未找到</Title>
         <Text type="secondary">{error || '无法加载图片信息'}</Text>
         <div style={{ marginTop: '16px' }}>
           <Button onClick={() => router.push("/")}>返回首页</Button>
@@ -242,7 +253,7 @@ const PhotoDetailPage = () => {
     <>
       <Head>
         <title>{photoInfo.title || photoInfo.filename} - Photo Store</title>
-        <meta name="description" content={photoInfo.description || `照片 ${photoInfo.id} 的详细信息`} />
+        <meta name="description" content={photoInfo.description || `图片 ${photoInfo.id} 的详细信息`} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/logo.png" />
       </Head>
@@ -278,7 +289,7 @@ const PhotoDetailPage = () => {
             width: '100%'
           }}>
             <div className={styles.photoDetailContainer}>
-              {/* 左侧：照片展示 */}
+              {/* 左侧：图片展示 */}
               <div style={{ flex: '1', display: 'flex', flexDirection: 'column' }}>
                 <div className={styles.photoImageContainer}>
                   {presignedUrl ? (
@@ -365,7 +376,7 @@ const PhotoDetailPage = () => {
                           <div style={{ marginTop: '2px' }}>
                             {/* <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>EXIF信息:</div> */}
                             {exifData.dateTaken && (
-                              <div>拍摄日期: {exifData.dateTaken}</div>
+                              <div>拍摄日期: {formatExifDate(exifData.dateTaken)}</div>
                             )}
                             {/* {exifData.make && exifData.model && (
                               <div>相机: {exifData.make} {exifData.model}</div>
@@ -466,7 +477,7 @@ const PhotoDetailPage = () => {
                     type="info" 
                     showIcon 
                     message={<span style={{ fontSize: 12 }}>温馨提示</span>} 
-                    description={<span style={{ fontSize: 12, lineHeight: 1.4 }}>购买为实物邮寄服务：请准确填写收件人的姓名、电话、邮寄地址与邮箱，我们将使用实物方式寄送照片。</span>} 
+                    description={<span style={{ fontSize: 12, lineHeight: 1.4 }}>购买为实物邮寄服务：请准确填写收件人的姓名、电话、邮寄地址与邮箱，我们将使用实物方式寄送图片（不包括图片框架）。</span>} 
                     style={{ marginBottom: 8, padding: 8 }} 
                   />
 
@@ -487,7 +498,7 @@ const PhotoDetailPage = () => {
                       </Col>
                       <Col span={12}>
                         <Form.Item label={<span style={{ fontSize: 12 }}>收件电话</span>} name="phone" rules={[{ required: true, message: '请输入电话' }]} style={{ marginBottom: 8 }}> 
-                          <Input placeholder="用于快递联系，如 +1 450-456-7890" size="small" />
+                          <Input placeholder="如+1 450-456-7890，用于快递联系" size="small" />
                         </Form.Item>
                       </Col>
                     </Row>

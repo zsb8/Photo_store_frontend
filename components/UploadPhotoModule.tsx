@@ -147,6 +147,17 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
                 prefix="$"
               />
             </Form.Item>
+            <Form.Item
+              name="specialPrice"
+              label="特殊尺寸价格"
+            >
+              <InputNumber
+                min={0}
+                step={1}
+                placeholder="100"
+                prefix="$"
+              />
+            </Form.Item>
           </Space>
         </Form.Item>
 
@@ -188,9 +199,9 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
               <Form.Item name="metaPlace" label="拍摄地点(国家/目的地)">
                 <Input placeholder="如：Banff, Canada" />
               </Form.Item>
-              <Form.Item name="metaYear" label="拍摄时间（年）">
+              {/* <Form.Item name="metaYear" label="拍摄时间（年）">
                 <Input placeholder="如：2024" />
-              </Form.Item>
+              </Form.Item> */}
             </Space>
           </Space>
         </Form.Item>

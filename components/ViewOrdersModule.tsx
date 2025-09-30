@@ -90,7 +90,7 @@ const ViewOrdersModule: React.FC<ViewOrdersModuleProps> = ({
     <Card title="查看订单" className={styles.contentCard}>
       <div style={{ marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
         <Input
-          placeholder="搜索订单ID、描述或邮箱"
+          placeholder="搜索订单ID、姓名、电话、邮件"
           prefix={<SearchOutlined />}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}

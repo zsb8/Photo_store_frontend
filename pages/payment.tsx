@@ -214,11 +214,11 @@ const PaymentPage: React.FC = () => {
             </Form.Item>
 
             <Form.Item
-              label="邮箱地址"
+              label="电子邮箱地址"
               name="email"
               rules={[
-                { required: true, message: '请输入邮箱地址' },
-                { type: 'email', message: '请输入有效的邮箱地址' }
+                { required: true, message: '请输入电子邮箱地址' },
+                { type: 'email', message: '请输入有效的电子邮箱地址' }
               ]}
             >
               <Input placeholder="用于接收支付确认" />

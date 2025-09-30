@@ -115,7 +115,7 @@ const SlideshowHome: React.FC = () => {
   return (
     <>
       <Head>
-        <title>主页 - 精美照片</title>
+        <title>主页 - 精美图片</title>
       </Head>
       <div style={{ minHeight: "calc(100vh - 64px)", background: "#000" }}>
         {loading || !imagesReady ? (
@@ -164,8 +164,8 @@ const SlideshowHome: React.FC = () => {
                     transition: "opacity 800ms ease 200ms",
                   }}
                 >
-                  <div className={styles.heroLineTop}>奇迹将从这里开始</div>
-                  <div className={styles.heroTitle}>连众 风光摄影</div>
+                  <div className={styles.heroLineTop}>探寻地球上瑰丽多彩的“花花视界”</div>
+                  <div className={styles.heroTitle}>自然风光摄影</div>
                   <div className={styles.heroLineBottom}>跟着连众去探索世界大自然之绮丽</div>
                 </div>
               </div>

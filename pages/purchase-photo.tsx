@@ -14,7 +14,7 @@ const { Title, Text } = Typography;
 
 const PurchasePhotoPage: React.FC = () => {
   const router = useRouter();
-  const { markAsPurchased } = useCart();
+  const { markAsPurchased, cartItems: contextCart } = useCart();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartTotal, setCartTotal] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -50,31 +50,37 @@ const PurchasePhotoPage: React.FC = () => {
       const sizeLabel = size === 'small' ? '小' : size === 'medium' ? '中' : '大';
       return `${shortFileName} (${sizeLabel})`;
     }
-    return item.alt || `照片 ${item.id}`;
+    return item.alt || `图片 ${item.id}`;
   };
 
   useEffect(() => {
-    // 从localStorage加载购物车数据
+    // 使用上下文中的购物车 + 本地选择的ID
     if (typeof window !== 'undefined') {
-      const savedCartItems = localStorage.getItem('cartItems');
-      const savedCartTotal = localStorage.getItem('cartTotal');
-      
-      if (savedCartItems && savedCartTotal) {
-        try {
-          setCartItems(JSON.parse(savedCartItems));
-          setCartTotal(parseFloat(savedCartTotal));
-        } catch (error) {
-          console.error('Error loading cart data:', error);
-          message.error('加载购物车数据失败');
-          router.push('/');
+      try {
+        const savedIds = localStorage.getItem('cartSelectedIds');
+        const savedTotal = localStorage.getItem('cartSelectedTotal');
+        if (savedIds) {
+          const selectedIds: Array<string | number> = JSON.parse(savedIds);
+          const idSet = new Set(selectedIds.map(id => String(id)));
+          const selectedItems = contextCart.filter(ci => idSet.has(String(ci.id)));
+          setCartItems(selectedItems);
+          if (savedTotal) {
+            setCartTotal(parseFloat(savedTotal));
+          } else {
+            setCartTotal(selectedItems.reduce((s, it) => s + it.price, 0));
+          }
+        } else {
+          message.warning('请先在购物车选择要支付的商品');
+          router.push('/print-store');
         }
-      } else {
-        message.warning('购物车为空');
-        router.push('/');
+      } catch (e) {
+        console.error('Error loading selected cart data:', e);
+        message.error('加载已选商品失败');
+        router.push('/print-store');
       }
     }
     setLoading(false);
-  }, [router]);
+  }, [router, contextCart]);
 
   // 确保预签名链接存在（登录后localStorage被清空时补齐）
   useEffect(() => {
@@ -153,7 +159,7 @@ const PurchasePhotoPage: React.FC = () => {
         <Result
           status="info"
           title="购物车为空"
-          subTitle="请先选择要购买的照片"
+          subTitle="请先选择要购买的图片"
           extra={
             <Button type="primary" onClick={handleBackToHome}>
               返回购买页面
@@ -167,8 +173,8 @@ const PurchasePhotoPage: React.FC = () => {
   return (
     <>
       <Head>
-        <title>购买照片 - Photo Store</title>
-        <meta name="description" content="确认购买照片" />
+        <title>购买图片 - Photo Store</title>
+        <meta name="description" content="确认购买图片" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/logo.png" />
       </Head>
@@ -237,9 +243,7 @@ const PurchasePhotoPage: React.FC = () => {
                       <Title level={4} style={{ margin: 0, marginBottom: '8px' }}>
                         {formatFileNameWithSize(item)}
                       </Title>
-                      <Text type="secondary" style={{ fontSize: '14px' }}>
-                        {item.description}
-                      </Text>
+                      {/* 描述文字已按要求隐藏 */}
                       <div style={{ marginTop: '8px' }}>
                         <Text type="secondary" style={{ fontSize: '12px', color: '#52c41a' }}>
                           ✓ 已添加到购物车
@@ -274,7 +278,7 @@ const PurchasePhotoPage: React.FC = () => {
               <PaymentButton
                 amount={cartTotal}
                 currency="cad"
-                description={`购买 ${cartItems.length} 张照片 - ${cartItems.map(item => {
+                description={`购买 ${cartItems.length} 张图片 - ${cartItems.map(item => {
                   return formatFileNameWithSize(item);
                 }).join(', ')}`}
                 buttonText={`确认支付 ${formatPrice(cartTotal)}`}

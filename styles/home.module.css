@@ -207,7 +207,7 @@
   font-weight: 600;
 }
 
-/* 照片展示页面样式 */
+/* 图片展示页面样式 */
 .main {
   min-height: 100vh;
   background: #f0f2f5;
@@ -338,19 +338,19 @@
   margin: 0 auto;
 }
 
-/* 照片区域容器样式 */
+/* 图片区域容器样式 */
 .photoSectionContainer {
   border: none !important;
   background: transparent !important;
   padding: 0 !important;
 }
 
-/* 照片区域标识样式 */
+/* 图片区域标识样式 */
 .photoSectionHeader {
   display: none;
 }
 
-/* 照片卡片样式 */
+/* 图片卡片样式 */
 .photoCard {
   transition: all 0.3s ease;
 }
@@ -404,7 +404,7 @@
   }
 }
 
-/* 照片详情页响应式布局 */
+/* 图片详情页响应式布局 */
 .photoDetailContainer {
   display: flex;
   gap: 24px;

@@ -71,7 +71,7 @@ export default function PhotoTypeListPage() {
               <Spin size="large" />
             </div>
           ) : items.length === 0 ? (
-            <Empty description="该分类暂无相片" />
+            <Empty description="该分类暂无图片" />
           ) : (
             <Row gutter={[16, 16]}>
               {items.map((p) => (

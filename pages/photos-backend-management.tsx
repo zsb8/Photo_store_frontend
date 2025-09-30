@@ -24,6 +24,7 @@ interface PhotoFormData {
     small: number;
     medium: number;
     large: number;
+    special?: number;
   };
 }
 
@@ -83,6 +84,7 @@ const PhotosBackendManagement: React.FC = () => {
             const smallPrice = item.prices?.small?.S ? parseFloat(item.prices.small.S) : 5;
             const mediumPrice = item.prices?.medium?.S ? parseFloat(item.prices.medium.S) : 10;
             const largePrice = item.prices?.large?.S ? parseFloat(item.prices.large.S) : 20;
+            const specialPrice = item.prices?.special?.S ? parseFloat(item.prices.special.S) : 0;
             
             return {
               id: item.id || `photo_${index}`, // 使用API返回的真实ID
@@ -93,7 +95,8 @@ const PhotosBackendManagement: React.FC = () => {
               sizes: [
                 { size: 'small', label: '小图片', price: smallPrice },
                 { size: 'medium', label: '中图片', price: mediumPrice },
-                { size: 'large', label: '大图片', price: largePrice }
+                { size: 'large', label: '大图片', price: largePrice },
+                { size: 'special', label: '特殊尺寸', price: specialPrice }
               ],
               description: item.description || '暂无描述'
             };
@@ -121,7 +124,8 @@ const PhotosBackendManagement: React.FC = () => {
               sizes: [
                 { size: 'small', label: '小图片', price: 5.00 },
                 { size: 'medium', label: '中图片', price: 10.00 },
-                { size: 'large', label: '大图片', price: 20.00 }
+                { size: 'large', label: '大图片', price: 20.00 },
+                { size: 'special', label: '特殊尺寸', price: 0 }
               ],
               description: item.description || '暂无描述'
             }));
@@ -146,7 +150,8 @@ const PhotosBackendManagement: React.FC = () => {
     uploadForm.setFieldsValue({
       smallPrice: 5,
       mediumPrice: 10,
-      largePrice: 20
+      largePrice: 20,
+      specialPrice: 100
     });
   }, [uploadForm]);
 
@@ -279,7 +284,8 @@ const PhotosBackendManagement: React.FC = () => {
             {
               small: values.smallPrice || 5,
               medium: values.mediumPrice || 10,
-              large: values.largePrice || 20
+              large: values.largePrice || 20,
+              special: values.specialPrice ?? 100
             },
             values.metaSize,
             values.metaTopic,
@@ -300,7 +306,8 @@ const PhotosBackendManagement: React.FC = () => {
             {
               small: values.smallPrice || 5,
               medium: values.mediumPrice || 10,
-              large: values.largePrice || 20
+              large: values.largePrice || 20,
+              special: values.specialPrice ?? 100
             },
             values.metaSize,
             values.metaTopic,
@@ -326,7 +333,8 @@ const PhotosBackendManagement: React.FC = () => {
         uploadForm.setFieldsValue({
           smallPrice: 5,
           mediumPrice: 10,
-          largePrice: 20
+          largePrice: 20,
+          specialPrice: 100
         });
         setSelectedImage(null); // 清空选择的图片
         message.success(`图片上传成功！文件名: ${uploadResult.file_name} (${isLargeFile ? '大图直传' : '小图Base64'})`);
@@ -359,6 +367,7 @@ const PhotosBackendManagement: React.FC = () => {
                 const smallPrice = item.prices?.small?.S ? parseFloat(item.prices.small.S) : 5;
                 const mediumPrice = item.prices?.medium?.S ? parseFloat(item.prices.medium.S) : 10;
                 const largePrice = item.prices?.large?.S ? parseFloat(item.prices.large.S) : 20;
+                const specialPrice = item.prices?.special?.S ? parseFloat(item.prices.special.S) : 0;
                 
               return {
                 id: item.id || `photo_${index}`, // 使用API返回的真实ID
@@ -369,7 +378,8 @@ const PhotosBackendManagement: React.FC = () => {
                 sizes: [
                   { size: 'small', label: '小图片', price: smallPrice },
                   { size: 'medium', label: '中图片', price: mediumPrice },
-                  { size: 'large', label: '大图片', price: largePrice }
+                  { size: 'large', label: '大图片', price: largePrice },
+                  { size: 'special', label: '特殊尺寸', price: specialPrice }
                 ],
                 description: item.description || '暂无描述'
               };
@@ -411,6 +421,7 @@ const PhotosBackendManagement: React.FC = () => {
       smallPrice: photo.sizes.find(s => s.size === 'small')?.price,
       mediumPrice: photo.sizes.find(s => s.size === 'medium')?.price,
       largePrice: photo.sizes.find(s => s.size === 'large')?.price,
+      specialPrice: 100,
     });
     setIsEditModalVisible(true);
   };
@@ -431,7 +442,8 @@ const PhotosBackendManagement: React.FC = () => {
         {
           small: values.smallPrice || 5,
           medium: values.mediumPrice || 10,
-          large: values.largePrice || 20
+          large: values.largePrice || 20,
+          special: values.specialPrice ?? 100
         }, // prices 使用新的价格
         editingPhoto.id.toString() // record_id 使用图片ID，转换为字符串
       );
@@ -906,7 +918,7 @@ const PhotosBackendManagement: React.FC = () => {
         <Header className={styles.header}>
           <div className={styles.headerContent}>
             <PictureOutlined className={styles.logo} />
-            <h1 className={styles.title}>照片商店后台管理系统</h1>
+            <h1 className={styles.title}>图片商店后台管理系统</h1>
           </div>
         </Header>
         
@@ -992,6 +1004,16 @@ const PhotosBackendManagement: React.FC = () => {
                     prefix="$"
                   />
                 </Form.Item>
+                <Form.Item
+                  name="specialPrice"
+                  label="特殊尺寸价格"
+                >
+                  <InputNumber
+                    min={0}
+                    step={1}
+                    prefix="$"
+                  />
+                </Form.Item>            
               </Space>
             </Form.Item>
 

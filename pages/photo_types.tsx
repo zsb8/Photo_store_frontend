@@ -72,7 +72,7 @@ export default function PhotoTypesPage() {
               <Spin size="large" />
             </div>
           ) : keys.length === 0 ? (
-            <Empty description="暂无相片" />
+            <Empty description="暂无图片" />
           ) : (
             <Row gutter={[24, 24]}>
               {keys.map((k) => (
@@ -86,9 +86,9 @@ export default function PhotoTypesPage() {
                     <Row gutter={[16, 16]}>
                       {grouped[k].slice(0, 1).map((p) => (
                         <Col xs={24} key={p.id}>
-                          <div style={{ position: "relative", width: 320, height: 200, borderRadius: 8, overflow: "hidden", background: "#f0f0f0", margin: '0 auto' }}>
+                          <div style={{ position: "relative", width: 320, height: 200, borderRadius: 8, overflow: "hidden", background: "#f0f0f0", margin: '0 auto', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }} onContextMenu={(e) => e.preventDefault()}>
                             {p.s3_newsize_path ? (
-                              <Image src={p.s3_newsize_path} alt={p.title || p.filename} fill style={{ objectFit: "contain" }} />
+                              <Image src={p.s3_newsize_path} alt={p.title || p.filename} fill style={{ objectFit: "contain" }} draggable={false} onContextMenu={(e) => e.preventDefault()} />
                             ) : (
                               <div style={{ height: 200, background: "#f5f5f5" }} />
                             )}

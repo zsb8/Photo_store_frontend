@@ -47,7 +47,7 @@ const SiteHeader: React.FC = () => {
     <Header className={styles.header}>
       <div className={styles.brand}>
         <Link href="/" className={styles.brandLink}>
-          精美照片销售
+          精美图片销售
         </Link>
       </div>
       <div className={styles.navArea}>

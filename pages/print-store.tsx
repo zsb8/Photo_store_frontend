@@ -19,6 +19,7 @@ interface PhotoItem {
   presigned_url: string;
   expires_in: number;
   title?: string;
+  filename_id?: string;
 }
 
 const PrintStorePage = () => {
@@ -32,6 +33,7 @@ const PrintStorePage = () => {
       try {
         setLoading(true);
         const photoSettingsResponse = await get_all_photo_settings();
+        console.log('!!!!!!!!!!!===能看到特殊尺寸图片么===photoSettingsResponse', photoSettingsResponse);
         if (photoSettingsResponse.data && photoSettingsResponse.data.length > 0) {
           const galleryResponse = await get_photos_presigned_url();
           const presignedUrlMap = new Map<string, string>();
@@ -48,10 +50,11 @@ const PrintStorePage = () => {
             presigned_url: presignedUrlMap.get(item.id) || item.s3_newsize_path || "",
             expires_in: 3600,
             title: item.title || item.filename || `Photo ${index + 1}`,
+            filename_id: item.filename_id,
           }));
           setPhotos(convertedPhotos);
         } else {
-          message.error("暂无照片可售");
+          message.error("暂无图片可售");
           setPhotos([]);
         }
       } catch (error) {
@@ -72,8 +75,8 @@ const PrintStorePage = () => {
   return (
     <>
       <Head>
-        <title>作品 - 精美照片销售</title>
-        <meta name="description" content="购买精美照片，高质量摄影作品" />
+        <title>作品 - 精美图片销售</title>
+        <meta name="description" content="购买精美图片，高质量摄影作品" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/logo.png" />
       </Head>
@@ -102,7 +105,7 @@ const PrintStorePage = () => {
               </Col>
             ) : photos.length === 0 ? (
               <Col span={24} style={{ textAlign: "center", padding: "40px" }}>
-                <Text type="secondary">暂无照片可售。</Text>
+                <Text type="secondary">暂无图片可售。</Text>
               </Col>
             ) : (
               photos
@@ -118,7 +121,7 @@ const PrintStorePage = () => {
                             hoverable
                             cover={
                               <div style={{ position: "relative", height: "200px", overflow: "hidden", userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none", cursor: "pointer" }} onContextMenu={(e) => e.preventDefault()} onClick={() => handlePhotoClick(photo.id)}>
-                                <Image src={photo.presigned_url} alt={photo.filename || `图片 ${photo.id}`} fill style={{ objectFit: "cover" }} draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                                <Image src={photo.presigned_url} alt={`图片 ${photo.id}` || photo.filename} fill style={{ objectFit: "cover" }} draggable={false} onContextMenu={(e) => e.preventDefault()} />
                               </div>
                             }
                             actions={[
@@ -132,12 +135,12 @@ const PrintStorePage = () => {
                             style={{ border: "2px solid #f0f0f0", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", marginBottom: "16px", position: "relative", overflow: "hidden" }}
                             className={styles.photoCard}
                           >
-                            <Card.Meta title={(photo.title || photo.filename || `图片 ${photo.id}`)?.replace(/\.(jpg|jpeg|png|gif|webp)$/i, "")} description="" />
+                            <Card.Meta title={(photo.filename_id || photo.id)} description="" />
                           </Card>
                           {index < photos.length - 1 && (
                             <div className={styles.mobileDivider} style={{ display: "none", height: "3px", background: "linear-gradient(90deg, #f0f0f0, #1890ff, #f0f0f0)", margin: "24px 0", borderRadius: "2px", position: "relative", boxShadow: "0 2px 4px rgba(24, 144, 255, 0.3)" }}>
                               <div style={{ position: "absolute", top: "-10px", left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #1890ff, #40a9ff)", color: "white", padding: "6px 16px", borderRadius: "16px", fontSize: "12px", fontWeight: "bold", whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(24, 144, 255, 0.4)", border: "2px solid white" }}>
-                                ↓ 下一个照片 ↓
+                                ↓ 下一个图片 ↓
                               </div>
                             </div>
                           )}
