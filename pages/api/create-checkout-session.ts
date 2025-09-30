@@ -1,9 +1,16 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 
-const stripe = new Stripe('sk_test_Hrs6SAopgFPF0bZXSN3f6ELN', {
+
+const stripe_token = process.env.STRIPE_TOKEN ?? "";
+
+// const stripe = new Stripe('sk_test_Hrs6SAopgFPF0bZXSN3f6ELN', {
+//   apiVersion: '2025-08-27.basil',
+// });
+const stripe = new Stripe(stripe_token, {
   apiVersion: '2025-08-27.basil',
 });
+
 
 export default async function handler(
   req: NextApiRequest,
