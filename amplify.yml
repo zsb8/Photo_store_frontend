@@ -13,8 +13,9 @@ frontend:
         - "npm ci"
     build:
       commands:
-        - 'echo "!!!!!!! ====== Amplify sees NEXT_PUBLIC_URLPREFIX=$NEXT_PUBLIC_URLPREFIX"'
+        - 'echo "!!!!!!! ====== Amplify sees NEXT_PUBLIC_URLPREFIX=$NEXT_PUBLIC_URLPREFIX and STRIPE_TOKEN=$STRIPE_TOKEN"'
         - 'echo "NEXT_PUBLIC_URLPREFIX=$NEXT_PUBLIC_URLPREFIX" > .env'
+        - 'echo "STRIPE_TOKEN=$STRIPE_TOKEN" > .env'        
         - "echo 'Building the app...'"
         - "npm run build"
         - "echo 'Creating standalone build for Amplify...'"

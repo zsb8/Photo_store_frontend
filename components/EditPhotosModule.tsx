@@ -54,7 +54,9 @@ const EditPhotosModule: React.FC<EditPhotosModuleProps> = ({ photoList, onRefres
       key: 'prices',
       render: (photo: Photo) => (
         <Space direction="vertical" size="small">
-          {photo.sizes.map(size => (
+          {photo.sizes
+            .filter(size => Number(size.price) > 0)
+            .map(size => (
             <Tag key={size.size} color="blue">
               {size.label}: ${size.price}
             </Tag>
