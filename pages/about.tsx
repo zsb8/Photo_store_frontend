@@ -14,7 +14,7 @@ const AboutPage = () => {
       <main className={styles.main}>
         <div className={styles.container}>
           <Title level={1} style={{ textAlign: "center", marginBottom: 24 }}>作者简介</Title>
-          <Paragraph style={{ fontSize: 16, lineHeight: 1.9 }}>
+          <Paragraph style={{ fontSize: 22, lineHeight: 2, fontWeight: 700, textAlign: "left", marginBottom: 16 }}>
             欢迎并感谢您对我的摄影图片的欣赏！
           </Paragraph>
           <Paragraph style={{ fontSize: 16, lineHeight: 1.9 }}>
@@ -28,10 +28,10 @@ const AboutPage = () => {
             <li>网络平衡调试</li>
             <li>异常与故障分析诊断</li>
           </ul>
-          <Paragraph style={{ fontSize: 16, lineHeight: 1.9 }}>
+          <Paragraph style={{ fontSize: 18, lineHeight: 2 }}>
             作为自由摄影爱好者，我将科学技术的严谨与艺术的敏感融合在一起。于1988—1992年在《人民摄影》（原名《中国摄影报》）发表过60余篇摄影技术类文章，奠定了摄影语言的深厚积淀，并将对能源流动的深刻理解，转化为捕捉自然之光的独特视角。
           </Paragraph>
-          <Paragraph style={{ fontSize: 16, lineHeight: 1.9 }}>
+          <Paragraph style={{ fontSize: 18, lineHeight: 2 }}>
             业余时光多以旅行为主。近年来，我期望把所理解和记录的自然环境壮丽之美，基于不同主题，以时空切片（图片）的形式分享给您、您的家人及朋友。观者透过图片，从不同维度探索与感受大自然的馈赠与深切热爱；同时，也唤起对自然资源与环境保护的重视与参与，赋予您对这些时空切片的所有诠释。
           </Paragraph>
         </div>

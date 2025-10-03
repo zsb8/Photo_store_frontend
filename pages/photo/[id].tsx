@@ -171,12 +171,12 @@ const PhotoDetailPage = () => {
   // 获取当前图片的预授权链接
   const presignedUrl = photoInfo ? getPresignedUrlFromStorage(photoInfo.id) : null;
 
-  // 格式化 EXIF 拍摄日期为 YYYYMMDD（例如 2024-01-18T08-51-59 -> 20240118）
+  // 格式化 EXIF 拍摄日期为 YYYY.MM.DD（例如 2024-01-18T08-51-59 -> 2024.01.18）
   const formatExifDate = (dateStr: string): string => {
     try {
       const datePart = (dateStr || '').split('T')[0];
       if (!datePart) return dateStr;
-      return datePart.replace(/-/g, '');
+      return datePart.replace(/-/g, '.');
     } catch {
       return dateStr;
     }
@@ -375,7 +375,7 @@ const PhotoDetailPage = () => {
                   
                   {/* 图片信息 */}
                   <div style={{ marginTop: '16px', fontSize: '12px', color: '#666' }}>
-                    <div>图片ID: {photoInfo.filename_id || photoInfo.id}</div>
+                    <div>图片ID: {photoInfo.exifInfo ? (() => { try { const exifData: ImageExifInfo = parseExifInfoFromJson(photoInfo.exifInfo); return exifData.dateTaken ? `${formatExifDate(exifData.dateTaken)} ` : ''; } catch { return ''; } })() : ''}- {photoInfo.filename_id || photoInfo.id}</div>
                     {/* <div>上传时间: {new Date(photoInfo.upload_datetime).toLocaleString()}</div>
                     <div>设置时间: {new Date(photoInfo.setting_datetime).toLocaleString()}</div> */}
                     {photoInfo.size && (
@@ -526,7 +526,7 @@ const PhotoDetailPage = () => {
                       </Col>
                       <Col span={12}>
                         <Form.Item label={<span style={{ fontSize: 12 }}>收件电话</span>} name="phone" rules={[{ required: true, message: '请输入电话' }]} style={{ marginBottom: 8 }}> 
-                          <Input placeholder="如+1 450-456-7890，用于快递联系" size="small" />
+                          <Input placeholder="+1 234-567-8901" size="small" />
                         </Form.Item>
                       </Col>
                     </Row>

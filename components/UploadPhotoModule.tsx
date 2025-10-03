@@ -94,19 +94,19 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
           )}
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="alt"
           label="图片标题"
           rules={[{ required: true, message: '请输入图片标题' }]}
         >
           <Input placeholder="请输入图片标题" />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
           name="description"
           label="图片描述"
         >
-          <TextArea rows={2} placeholder="请输入图片描述。如果留空，将自动由AI生成三语的图片描述" />
+          <TextArea rows={1} placeholder="请输入固定格式三语图片描述。如果留空，将自动由AI生成三语的图片描述" />
         </Form.Item>
 
         <Form.Item label="售价">
