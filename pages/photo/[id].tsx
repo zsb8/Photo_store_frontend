@@ -220,7 +220,7 @@ const PhotoDetailPage = () => {
         <Title level={2}>图片未找到</Title>
         <Text type="secondary">{error || '无法加载图片信息'}</Text>
         <div style={{ marginTop: '16px' }}>
-          <Button onClick={() => router.push("/")}>返回首页</Button>
+          <Button onClick={() => router.push("/")}>返回图片</Button>
         </div>
       </div>
     );
@@ -298,7 +298,7 @@ const PhotoDetailPage = () => {
               onClick={() => router.push("/")}
               size="middle"
             >
-              返回首页
+              返回图片
             </Button>
             <ShoppingCart 
               items={cartItems}

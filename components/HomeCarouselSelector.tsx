@@ -130,7 +130,7 @@ const HomeCarouselSelector: React.FC = () => {
               <div style={{ marginTop: 6 }}>
                 <Space direction="vertical" size={4} style={{ width: '100%' }}>
                   <div style={{ fontWeight: 500, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title || s.filename}</div>
-                  <Checkbox checked={checked} onChange={(e) => toggle(s.id, e.target.checked)}>作为首页滚动图片</Checkbox>
+                  <Checkbox checked={checked} onChange={(e) => toggle(s.id, e.target.checked)}>首页滚动</Checkbox>
                 </Space>
               </div>
             </Card>

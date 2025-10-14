@@ -1,5 +1,6 @@
 import { prepareGetRequest, preparePostRequest } from "@/util/request-helper";
 const urlprefix = process.env.NEXT_PUBLIC_URLPREFIX ?? "";
+const urlprefix_search = process.env.NEXT_PUBLIC_URLPREFIX_SEARCH ?? "";
 
 /**
  * 如果图像高度超过指定值，则按比例缩放图像
@@ -948,6 +949,7 @@ interface AIPhotoDescResponse {
     CHS: string;
 }
 
+
 /**
  * 从DynamoDB和S3删除图片
  * @param recordId - 图片记录ID
@@ -1036,6 +1038,37 @@ export async function openai_photo_desc_multi_language(photo_data: string, file_
     }catch(error){
         console.error("!!!!=====AI生成图片描述失败",error);
         throw new Error(error instanceof Error ? error.message : 'AI生成图片描述失败');
+    }
+       
+}
+
+interface QueryAIPhotoIdRequest {
+    Question: string;
+}
+interface QueryAIPhotoIdResponse {
+    photo_id_list: Array<string>;
+}
+export async function query_ai_photo_id(query: string): Promise<QueryAIPhotoIdResponse> {
+    const createPhotoDescUrl = `https://${urlprefix_search}.execute-api.us-east-1.amazonaws.com/rag_search`;
+    try{
+        console.log("!!!!=====开始用AI查询你要的图片的ID");
+        const requestData: QueryAIPhotoIdRequest = {
+            Question: query,
+        };
+        const requestParams = preparePostRequest(JSON.stringify(requestData));
+        const response = await fetch(createPhotoDescUrl, requestParams);
+        const jsonObj = await response.json();
+        console.log("!!!!!!!!====查询得到是啥：",jsonObj)
+        const res_list: any[] | undefined = jsonObj?.result
+        console.log("!!!!!!!!====查询得到res_list是啥：",res_list)   
+        if (!res_list) {
+            throw new Error('AI查询图片ID失败');
+        }
+        const photo_id_list = res_list.map((i: any) => i?.metadata?.source)
+        return { photo_id_list };
+    }catch(error){
+        console.error("!!!!=====AI查询图片ID失败",error);
+        throw new Error(error instanceof Error ? error.message : 'AI查询图片ID失败');
     }
        
 }

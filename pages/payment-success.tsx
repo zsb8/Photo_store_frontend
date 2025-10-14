@@ -204,7 +204,7 @@ const PaymentSuccessPage: React.FC = () => {
             </Text>
             <div style={{ marginTop: '8px' }}>
                           <Text type="secondary" style={{ fontSize: '12px' }}>
-              提示：点击&ldquo;返回首页&rdquo;将刷新页面并显示最新的购物车状态。
+              提示：点击&ldquo;返回图片&rdquo;将刷新页面并显示最新的购物车状态。
             </Text>
             </div>
           </div>

@@ -12,6 +12,7 @@ export interface Photo {
   alt: string;
   sizes: PhotoSize[];
   description: string;
+  exifInfo?: string;
 }
 
 export const photos: Photo[] = [

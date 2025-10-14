@@ -33,32 +33,36 @@ const PrintStorePage = () => {
       try {
         setLoading(true);
         const photoSettingsResponse = await get_all_photo_settings();
-        console.log('!!!!!!!!!!!===能看到特殊尺寸图片么===photoSettingsResponse', photoSettingsResponse);
+        
         if (photoSettingsResponse.data && photoSettingsResponse.data.length > 0) {
           const galleryResponse = await get_photos_presigned_url();
+          
           const presignedUrlMap = new Map<string, string>();
           if (galleryResponse.data) {
-            galleryResponse.data.forEach((item: any) => {
+            galleryResponse.data.forEach((item: any, index: number) => {
               presignedUrlMap.set(item.id, item.presigned_url);
             });
           }
-          const convertedPhotos: PhotoItem[] = photoSettingsResponse.data.map((item: any, index: number) => ({
-            id: item.id || `photo_${index}`,
-            filename: item.filename || `Photo ${index + 1}`,
-            s3_newsize_path: item.s3_newsize_path || "",
-            created_at: item.upload_datetime || new Date().toISOString(),
-            presigned_url: presignedUrlMap.get(item.id) || item.s3_newsize_path || "",
-            expires_in: 3600,
-            title: item.title || item.filename || `Photo ${index + 1}`,
-            filename_id: item.filename_id,
-          }));
+          
+          const convertedPhotos: PhotoItem[] = photoSettingsResponse.data.map((item: any, index: number) => {
+            const converted = {
+              id: item.id || `photo_${index}`,
+              filename: item.filename || `Photo ${index + 1}`,
+              s3_newsize_path: item.s3_newsize_path || "",
+              created_at: item.upload_datetime || new Date().toISOString(),
+              presigned_url: presignedUrlMap.get(item.id) || item.s3_newsize_path || "",
+              expires_in: 3600,
+              title: item.title || item.filename || `Photo ${index + 1}`,
+              filename_id: item.filename_id,
+            };
+            return converted;
+          });
           setPhotos(convertedPhotos);
         } else {
           message.error("暂无图片可售");
           setPhotos([]);
         }
       } catch (error) {
-        console.error("获取图片时发生错误:", error);
         message.error("获取图片时发生错误");
         setPhotos([]);
       } finally {
@@ -98,6 +102,13 @@ const PrintStorePage = () => {
           </div>
 
           <Row gutter={[24, 24]} justify="center" style={{ padding: "0 12px" }}>
+            {(() => {
+              console.log('🔍 [DEBUG] 渲染状态检查:');
+              console.log('🔍 [DEBUG] loading:', loading);
+              console.log('🔍 [DEBUG] photos.length:', photos.length);
+              console.log('🔍 [DEBUG] photos 内容:', photos);
+              return null;
+            })()}
             {loading ? (
               <Col span={24} style={{ textAlign: "center", padding: "40px" }}>
                 <Spin size="large" />
@@ -110,9 +121,16 @@ const PrintStorePage = () => {
             ) : (
               photos
                 .map((photo, index) => {
-                  if (!photo.presigned_url || photo.presigned_url.includes("error") || photo.presigned_url.includes("404")) {
+                  console.log(`🔍 [DEBUG] 处理图片 ${index}:`, photo);
+                  console.log(`🔍 [DEBUG] photo.presigned_url:`, photo.presigned_url);
+                  
+                  // 简化过滤逻辑：只检查是否有URL，不进行其他过滤（与photo_types页面保持一致）
+                  if (!photo.presigned_url) {
+                    console.log(`🔍 [DEBUG] 图片 ${index} 被过滤掉，原因: 没有 presigned_url`);
                     return null;
                   }
+                  
+                  console.log(`🔍 [DEBUG] 图片 ${index} 通过检查，将渲染`);
                   return (
                     <Col xs={24} sm={12} md={6} key={photo.id}>
                       <div style={{ position: "relative", marginBottom: index < photos.length - 1 ? "24px" : "0", padding: "16px 0" }}>

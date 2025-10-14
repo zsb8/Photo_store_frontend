@@ -15,6 +15,7 @@ frontend:
       commands:
         - 'echo "!!!!!!! ====== Amplify sees NEXT_PUBLIC_URLPREFIX=$NEXT_PUBLIC_URLPREFIX and STRIPE_TOKEN=$STRIPE_TOKEN"'
         - 'echo "NEXT_PUBLIC_URLPREFIX=$NEXT_PUBLIC_URLPREFIX" > .env'
+        - 'echo "NEXT_PUBLIC_URLPREFIX_SEARCH=$NEXT_PUBLIC_URLPREFIX_SEARCH" > .env'
         - 'echo "STRIPE_TOKEN=$STRIPE_TOKEN" > .env'        
         - "echo 'Building the app...'"
         - "npm run build"

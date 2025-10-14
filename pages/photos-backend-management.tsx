@@ -99,7 +99,8 @@ const PhotosBackendManagement: React.FC = () => {
                 { size: 'large', label: '大图片', price: largePrice },
                 { size: 'special', label: '特殊尺寸', price: specialPrice }
               ],
-              description: item.description || '暂无描述'
+              description: item.description || '暂无描述',
+              exifInfo: item.exifInfo // 添加EXIF信息字段
             };
           });
           
@@ -427,7 +428,7 @@ const PhotosBackendManagement: React.FC = () => {
       smallPrice: photo.sizes.find(s => s.size === 'small')?.price,
       mediumPrice: photo.sizes.find(s => s.size === 'medium')?.price,
       largePrice: photo.sizes.find(s => s.size === 'large')?.price,
-      specialPrice: 100,
+      specialPrice: photo.sizes.find(s => s.size === 'special')?.price || 0,
     });
     setIsEditModalVisible(true);
   };

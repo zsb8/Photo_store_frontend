@@ -33,11 +33,37 @@ const EditPhotosModule: React.FC<EditPhotosModuleProps> = ({ photoList, onRefres
     {
       title: '图片ID',
       key: 'id',
-      width: 80,
-      render: (photo: Photo) => photo.filename_id || photo.id,
+      width: 120,
+      render: (photo: Photo) => {
+        // 格式化 EXIF 拍摄日期为 YYYY.MM.DD 格式
+        const formatExifDate = (dateStr: string): string => {
+          try {
+            const datePart = (dateStr || '').split('T')[0];
+            if (!datePart) return dateStr;
+            return datePart.replace(/-/g, '.');
+          } catch {
+            return dateStr;
+          }
+        };
+
+        // 解析EXIF信息获取拍摄日期
+        let datePrefix = '';
+        if ((photo as any).exifInfo) {
+          try {
+            const exifData = JSON.parse((photo as any).exifInfo);
+            if (exifData.dateTaken) {
+              datePrefix = `${formatExifDate(exifData.dateTaken)} - `;
+            }
+          } catch (error) {
+            console.warn('Failed to parse EXIF info:', error);
+          }
+        }
+
+        return `${datePrefix}${photo.filename_id || photo.id}`;
+      },
     },
     {
-      title: '标题',
+      title: '文件名',
       dataIndex: 'alt',
       key: 'alt',
       width: 150,
