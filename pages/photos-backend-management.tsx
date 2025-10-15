@@ -443,16 +443,16 @@ const PhotosBackendManagement: React.FC = () => {
       
       // 调用 save_photo_settings API 保存图片信息
       const saveResult = await save_photo_settings(
-        editingPhoto.alt, // filename 使用图片标题
-        values.alt, // title 使用新的标题
         values.description, // description 使用新的描述
+        editingPhoto.alt, // filename 使用图片标题
+        editingPhoto.id.toString(), // record_id 使用图片ID，转换为字符串
+        values.alt, // title 使用新的标题
         {
           small: values.smallPrice || 0,
           medium: values.mediumPrice || 0,
           large: values.largePrice || 0,
           special: values.specialPrice ?? 0
         }, // prices 使用新的价格
-        editingPhoto.id.toString() // record_id 使用图片ID，转换为字符串
       );
 
       if (!saveResult.success) {
