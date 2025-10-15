@@ -87,6 +87,7 @@
   "PhotoTypes": {
     "title": "图片分类",
     "pageTitle": "图片分类",
+    "back": "返回",    
     "aiSearch": "AI搜索",
     "searchPlaceholder": "输入搜索描述...",
     "searchDescription": "请输入搜索描述",

@@ -87,6 +87,7 @@
   "PhotoTypes": {
     "title": "Catégories de Photos",
     "pageTitle": "Catégories de Photos",
+    "back": "Retour",      
     "aiSearch": "Recherche IA",
     "searchPlaceholder": "Entrez la description de recherche...",
     "searchDescription": "Veuillez entrer la description de recherche",

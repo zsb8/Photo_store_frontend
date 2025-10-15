@@ -7,10 +7,12 @@ import Link from "next/link";
 import ImagePreviewModal from "../../../components/ImagePreviewModal";
 import styles from "../../../styles/home.module.css";
 import { get_all_photo_settings, get_photos_presigned_url } from "../../../util/aws-api";
+import { useI18n } from "../../../contexts/I18nContext";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 export default function PhotoTypeListPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const { type } = router.query as { type?: string };
   const [loading, setLoading] = useState(true);
@@ -60,20 +62,20 @@ export default function PhotoTypeListPage() {
   return (
     <>
       <Head>
-        <title>分类：{type}</title>
+        <title>{t("PhotoTypes.title")}: {type}</title>
       </Head>
       <main className={styles.main}>
         <div className={styles.container}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <Title level={3} style={{ margin: 0 }}>分类：{type}</Title>
-            <Link href="/photo_types"><Button>返回分类</Button></Link>
+            <Title level={3} style={{ margin: 0 }}>{t("PhotoTypes.pageTitle")}: {type}</Title>
+            <Link href="/photo_types"><Button>{t("PhotoTypes.back")}</Button></Link>
           </div>
           {loading ? (
             <div style={{ textAlign: 'center', padding: 40 }}>
               <Spin size="large" />
             </div>
           ) : items.length === 0 ? (
-            <Empty description="该分类暂无图片" />
+            <Empty description={t("PhotoTypes.noImage")} />
           ) : (
             <Row gutter={[16, 16]}>
               {items.map((p) => (
