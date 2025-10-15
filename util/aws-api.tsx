@@ -66,6 +66,62 @@ async function resizeImageIfNeeded(base64Data: string, maxHeight: number): Promi
         img.src = imageSrc;
     });
 }
+
+
+
+interface DescEnbeddingRequest {
+    desc_en: string;
+    photo_id: string;
+}
+interface DescEnbeddingResponse {
+    success: boolean;
+    message: string;
+}
+export async function desc_embedding(
+    description: string,
+    record_id: string,
+): Promise<DescEnbeddingResponse> {
+    console.log("!!!!=====开始把图片描述embedding到postgresql数据库中去", description, record_id);
+    const embeddingUrl = `https://${urlprefix_search}.execute-api.us-east-1.amazonaws.com/embedding`;
+    const embeddingData: DescEnbeddingRequest = {
+        desc_en: description,
+        photo_id: record_id
+    };
+    console.log("Embedding input data:", embeddingData);
+    const requestParams = preparePostRequest(JSON.stringify(embeddingData));
+    try {
+        console.log("Making request to embedding desc...");
+        const response = await fetch(embeddingUrl, requestParams);
+        console.log("Response status:", response.status);
+        console.log("Response status text:", response.statusText);
+        const result = await response.json();
+        console.log("Embedding response:", result);
+        if (!response.ok) {
+            console.error("HTTP error:", response.status, response.statusText);
+            console.error("Response body:", result);
+            throw new Error(result.message || `HTTP ${response.status}: ${response.statusText}`);
+        }
+        if (result.error) {
+            console.error("API error:", result.error);
+            throw new Error(result.message || result.error);
+        }
+        return {
+            success: true,
+            message: result.message || "图片的描述，embedding成功"
+        };
+    } catch (error) {
+        console.error('Error embedding:', error);
+        console.error('Error type:', typeof error);
+        console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+        return {
+            success: false,
+            message: error instanceof Error ? error.message : '图片描述embedding失败'
+        };
+    }
+}
+
+
+
 // 图片上传接口类型定义
 interface UploadPhotoRequest {
     photo_data: string;  // Base64编码的图片数据
@@ -177,28 +233,31 @@ export async function upload_photo(
                 });
             }
         }
+        console.log("!!!!-------帮我看下是不是这里图片描述变量总是空的导致这里永远无法执行到? description:", description)
         if(description){
+            console.log("!!!!-------难道因为时间不对称导致永远无法执行到这里？除非人工在页面上输入图片描述内容？")
+            // 因为一般是选AI自动生成，而且AI自动生成很慢，所以一般来不及等待AI生成，这里就已经保存进去了。
             const record_id = result.result.record_id;
-        const saveSettingsResult = await save_photo_settings(
-                filename,
-                title,
+            const saveSettingsResult = await save_photo_settings(
                 description,
-                prices,
+                filename,                
                 record_id,
+                title,
+                prices,
                 size,
                 topic,
                 type,
                 place,
                 photo_year,
                 exifInfo,
-                filename_id
+                filename_id,
             );
             if (!saveSettingsResult.success) {
                 console.error("Photo uploaded but settings save failed:", saveSettingsResult.message);
                 console.error("Full error details:", saveSettingsResult);
-        }
+            }
         } else {
-            console.log("Photo settings saved successfully");
+            console.log("No description");
         }
         
         return {
@@ -240,7 +299,7 @@ interface SavePhotoSettingsRequest {
     data: {
         filename: string;
         title?: string;
-        description?: string;
+        description: string;
         prices?: {
             small: string;
             medium: string;
@@ -254,12 +313,14 @@ interface SavePhotoSettingsRequest {
         photo_year?: string;
         exifInfo?: string;
         filename_id?: string;
+        is_home_carousel?: string;
     };
 }
 
 interface SavePhotoSettingsResponse {
     success: boolean;
     message: string;
+    result: any;
 }
 
 /**
@@ -272,18 +333,18 @@ interface SavePhotoSettingsResponse {
  * @returns Promise<SavePhotoSettingsResponse>
  */
 export async function save_photo_settings(
+    description: string,
     filename: string,
+    record_id?: string,     
     title?: string,
-    description?: string,
     prices?: { small: number; medium: number; large: number; special?: number },
-    record_id?: string,
     size?: string,
     topic?: string,
     type?: string,
     place?: string,
     photo_year?: string,
     exifInfo?:string,
-    filename_id?:string
+    filename_id?:string,  
 ): Promise<SavePhotoSettingsResponse> {
     console.log("!!!!=====开始保存图片属性save_photo_settings", filename, title, prices, record_id);
     console.log("!!!!=====我不确定这准备提交给API的是否是含有数字的exifInfo", exifInfo);
@@ -306,7 +367,8 @@ export async function save_photo_settings(
             place: place,
             photo_year: photo_year,
             exifInfo: exifInfo,
-            filename_id: filename_id
+            filename_id: filename_id,
+            is_home_carousel: "0"
         },
     };
     console.log("Saving photo settings:", saveData);
@@ -332,9 +394,11 @@ export async function save_photo_settings(
             console.error("API error:", result.error);
             throw new Error(result.message || result.error);
         }
+        console.log("!!!!====图片设置保存成功")    
         return {
             success: true,
-            message: result.message || "图片设置保存成功"
+            message: result.message || "图片设置保存成功",
+            result: result.result
         };
     } catch (error) {
         console.error('Error saving photo settings:', error);
@@ -342,7 +406,8 @@ export async function save_photo_settings(
         console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
         return {
             success: false,
-            message: error instanceof Error ? error.message : '图片设置保存失败'
+            message: error instanceof Error ? error.message : '图片设置保存失败',
+            result: "failed"
         };
     }
 }
@@ -386,7 +451,7 @@ export async function get_photos_presigned_url(): Promise<PhotoGalleryResponse> 
             count: result.count || 0
         };
         
-        // 保存图片数据到本地存储，只保存id、presigned_url和当前时间
+        // 保存图片数据到本地存储，只保存id、presigned_url和当前时间和是否首页
         if (result.data && Array.isArray(result.data) && result.data.length > 0) {
             try {
                 const photoDataForStorage = result.data.map((photo: PhotoGalleryItem) => ({
@@ -575,11 +640,11 @@ export async function upload_bigphoto(
         if(description){
             try {
             const saveSettingsResult = await save_photo_settings(
-                filename,
+                description,    
+                filename,                
+                undefined,                            
                 title,
-                description,
                 prices,
-                undefined,
                 size,
                 topic,
                 type,
@@ -590,6 +655,18 @@ export async function upload_bigphoto(
             );
             if (!saveSettingsResult.success) {
                 console.warn('Big photo uploaded but settings save failed:', saveSettingsResult.message);
+            }else{
+                console.log("Begin to embedding desc")
+                const obj = JSON.parse(description)
+                const record_id = saveSettingsResult.result.id
+                const embeddingResult = await desc_embedding(
+                    obj.ENG,
+                    record_id
+                );
+                if (!embeddingResult.success) {
+                    console.log("!!!!=====天啊, embedding失败了");
+                    console.error("Photo desc embedding failed:", embeddingResult);
+                }                
             }
             } catch (e) {
                 console.warn('Failed to save settings after big photo upload:', e);
