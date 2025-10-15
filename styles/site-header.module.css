@@ -9,32 +9,68 @@
   position: sticky;
   top: 0;
   z-index: 1000;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .brand {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .brandLink {
   color: #ffffff;
   font-size: 18px;
   font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 .navArea {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   flex: 1;
   justify-content: flex-end;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .menu {
   background: transparent;
   min-width: 0;
-  overflow-x: auto;
+  flex: 1;
+  overflow: visible;
+}
+
+.menu :global(.ant-menu-horizontal) {
+  border-bottom: none;
+  line-height: 62px;
+}
+
+.menu :global(.ant-menu-item) {
+  padding: 0 12px;
+  margin: 0 2px;
+  font-size: 14px;
   white-space: nowrap;
+}
+
+.menu :global(.ant-menu-item a) {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+}
+
+.menu :global(.ant-menu-item:hover a) {
+  color: #ffffff;
+}
+
+.menu :global(.ant-menu-item-selected a) {
+  color: #ffffff;
 }
 
 .langSelectWrapper {
@@ -42,6 +78,8 @@
   align-items: center;
   gap: 8px;
   color: #ffffff;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .langLabel {
@@ -49,16 +87,84 @@
 }
 
 .langSelect :global(.ant-select-selector) {
-  min-width: 120px;
+  min-width: 100px;
+  max-width: 120px;
+}
+
+.langSelect :global(.ant-select-selection-item) {
+  font-size: 14px;
+}
+
+@media (max-width: 1024px) {
+  .menu :global(.ant-menu-item) {
+    padding: 0 8px;
+    font-size: 13px;
+  }
+  
+  .brandLink {
+    max-width: 150px;
+    font-size: 16px;
+  }
+  
+  .langSelectWrapper {
+    gap: 6px;
+  }
+  
+  .langSelect :global(.ant-select-selector) {
+    min-width: 90px;
+    max-width: 100px;
+  }
 }
 
 @media (max-width: 768px) {
   .header {
     height: 56px;
     padding: 0 12px;
+    gap: 8px;
   }
+  
   .brandLink {
-    font-size: 16px;
+    font-size: 14px;
+    max-width: 120px;
+  }
+  
+  .menu :global(.ant-menu-item) {
+    padding: 0 6px;
+    font-size: 12px;
+  }
+  
+  .navArea {
+    gap: 8px;
+  }
+  
+  .langLabel {
+    display: none;
+  }
+  
+  .langSelect :global(.ant-select-selector) {
+    min-width: 80px;
+    max-width: 90px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 0 8px;
+  }
+  
+  .brandLink {
+    font-size: 13px;
+    max-width: 100px;
+  }
+  
+  .menu :global(.ant-menu-item) {
+    padding: 0 4px;
+    font-size: 11px;
+  }
+  
+  .langSelect :global(.ant-select-selector) {
+    min-width: 70px;
+    max-width: 80px;
   }
 }
 

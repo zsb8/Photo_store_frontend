@@ -5,6 +5,7 @@ import { Col, Row, Spin, Typography, Tag, Empty, Input, Button, message, Select 
 import Image from "next/image";
 import styles from "../styles/home.module.css";
 import { get_all_photo_settings, get_photos_presigned_url, query_ai_photo_id } from "../util/aws-api";
+import { useI18n } from "../contexts/I18nContext";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -20,6 +21,7 @@ interface PhotoSettingItem {
 }
 
 export default function PhotoTypesPage() {
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [photos, setPhotos] = useState<PhotoSettingItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,6 +30,59 @@ export default function PhotoTypesPage() {
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<string>('');
   const [selectedType, setSelectedType] = useState<string>('');
+
+  // 中文分类名称到翻译键值的映射
+  const topicMapping: { [key: string]: string } = {
+    '新品': 'new',
+    '自然风光': 'nature',
+    '城市建筑': 'urban',
+    '静物': 'still',
+    '抽象与艺术': 'abstract',
+    '人文与生活': 'lifestyle',
+    '其他': 'other'
+  };
+
+  const subcategoryMapping: { [key: string]: string } = {
+    '新品': 'new',
+    '山脉': 'mountain',
+    '海洋': 'ocean',
+    '森林': 'forest',
+    '沙漠': 'desert',
+    '动物': 'animal',
+    '花卉': 'flower',
+    '烟花': 'fireworks',
+    '瀑布': 'waterfall',
+    '鸟禽': 'bird',
+    '冰雪': 'snow',
+    '江海': 'river',
+    '夜景': 'night',
+    '极光': 'aurora',
+    '星空': 'star',
+    '航拍': 'aerial',
+    '微距': 'macro',
+    '地标': 'landmark',
+    '街景': 'street',
+    '物品': 'object',
+    '光影': 'light',
+    '色彩': 'color',
+    '纹理': 'texture',
+    '极简': 'minimal',
+    '创意': 'creative',
+    '人像': 'portrait',
+    '情绪': 'emotion',
+    '其他': 'other'
+  };
+
+  // 获取翻译后的分类名称
+  const getTranslatedTopic = (topic: string) => {
+    const key = topicMapping[topic] || 'other';
+    return t(`PhotoTypes.topics.${key}`);
+  };
+
+  const getTranslatedSubcategory = (subcategory: string) => {
+    const key = subcategoryMapping[subcategory] || 'other';
+    return t(`PhotoTypes.subcategories.${key}`);
+  };
 
   // 子类别选项配置（与上传图片页面保持一致）
   const getSubcategoryOptions = (topic: string) => {
@@ -134,7 +189,7 @@ export default function PhotoTypesPage() {
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      message.warning("请输入搜索描述");
+      message.warning(t("PhotoTypes.searchDescription"));
       return;
     }
     
@@ -147,7 +202,7 @@ export default function PhotoTypesPage() {
       setIsSearchMode(searchIds.length > 0);
     } catch (error) {
       console.error("搜索失败:", error);
-      message.error("搜索失败，请重试");
+      message.error(t("PhotoTypes.searchFailed"));
       setSearchResult([]);
       setIsSearchMode(false);
     } finally {
@@ -166,15 +221,15 @@ export default function PhotoTypesPage() {
   return (
     <>
       <Head>
-        <title>图片分类</title>
+        <title>{t("PhotoTypes.pageTitle")}</title>
       </Head>
       <main className={styles.main}>
         <div className={styles.container}>
           <div style={{ marginBottom: 16 }}>
-            <Title level={2} style={{ margin: 0, marginBottom: 16 }}>图片分类</Title>
+            <Title level={2} style={{ margin: 0, marginBottom: 16 }}>{t("PhotoTypes.title")}</Title>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <Input
-                placeholder="输入搜索描述..."
+                placeholder={t("PhotoTypes.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onPressEnter={handleSearch}
@@ -185,33 +240,33 @@ export default function PhotoTypesPage() {
                 onClick={handleSearch}
                 loading={searchLoading}
               >
-                AI搜索
+                {t("PhotoTypes.aiSearch")}
               </Button>
               <Select
                 style={{ width: 120 }}
-                placeholder="主题"
+                placeholder={t("PhotoTypes.topic")}
                 value={selectedTopic}
                 onChange={handleTopicChange}
                 allowClear
               >
-                <Option value="新品">新品</Option>
-                <Option value="自然风光">自然风光</Option>
-                <Option value="城市建筑">城市建筑</Option>
-                <Option value="静物">静物</Option>
-                <Option value="抽象与艺术">抽象与艺术</Option>
-                <Option value="人文与生活">人文与生活</Option>
-                <Option value="其他">其他</Option>
+                <Option value="新品">{getTranslatedTopic("新品")}</Option>
+                <Option value="自然风光">{getTranslatedTopic("自然风光")}</Option>
+                <Option value="城市建筑">{getTranslatedTopic("城市建筑")}</Option>
+                <Option value="静物">{getTranslatedTopic("静物")}</Option>
+                <Option value="抽象与艺术">{getTranslatedTopic("抽象与艺术")}</Option>
+                <Option value="人文与生活">{getTranslatedTopic("人文与生活")}</Option>
+                <Option value="其他">{getTranslatedTopic("其他")}</Option>
               </Select>
               <Select
                 style={{ width: 120 }}
-                placeholder="子类别"
+                placeholder={t("PhotoTypes.subcategory")}
                 value={selectedType}
                 onChange={setSelectedType}
                 disabled={!selectedTopic}
                 allowClear
               >
                 {getSubcategoryOptions(selectedTopic).map(option => (
-                  <Option key={option} value={option}>{option}</Option>
+                  <Option key={option} value={option}>{getTranslatedSubcategory(option)}</Option>
                 ))}
               </Select>
               {(isSearchMode || selectedTopic || selectedType) && (
@@ -219,12 +274,12 @@ export default function PhotoTypesPage() {
                   onClick={handleClearSearch}
                   style={{ marginLeft: "8px" }}
                 >
-                  清除筛选
+                  {t("PhotoTypes.clearFilters")}
                 </Button>
               )}
               {isSearchMode && (
                 <div style={{ marginLeft: "16px" }}>
-                  <Text type="secondary">找到 {searchResult.length} 张匹配的图片</Text>
+                  <Text type="secondary">{t("PhotoTypes.searchSuccess")}: {searchResult.length} </Text>
                 </div>
               )}
             </div>
@@ -236,7 +291,7 @@ export default function PhotoTypesPage() {
           ) : isSearchMode ? (
             // 搜索模式：直接显示匹配的图片缩略图
             filteredPhotos.length === 0 ? (
-              <Empty description="没有找到匹配的图片" />
+              <Empty description={t("PhotoTypes.noMatchingPhotos")} />
             ) : (
               <Row gutter={[16, 16]}>
                 {filteredPhotos.map((photo) => (
@@ -273,7 +328,7 @@ export default function PhotoTypesPage() {
                             />
                           ) : (
                             <div style={{ width: "100%", height: 200, background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <Text type="secondary">无图片</Text>
+                              <Text type="secondary">{t("PhotoTypes.noImage")}</Text>
                             </div>
                           )}
                         </div>
@@ -281,10 +336,10 @@ export default function PhotoTypesPage() {
                       <div style={{ padding: "0 4px" }}>
                         <div style={{ marginTop: 4 }}>
                           {photo.type && (
-                            <Tag color="blue" style={{ fontSize: 10 }}>{photo.type}</Tag>
+                            <Tag color="blue" style={{ fontSize: 10 }}>{getTranslatedSubcategory(photo.type)}</Tag>
                           )}
                           {photo.topic && (
-                            <Tag color="green" style={{ fontSize: 10 }}>{photo.topic}</Tag>
+                            <Tag color="green" style={{ fontSize: 10 }}>{getTranslatedTopic(photo.topic)}</Tag>
                           )}
                         </div>
                       </div>
@@ -294,7 +349,7 @@ export default function PhotoTypesPage() {
               </Row>
             )
           ) : topics.length === 0 ? (
-            <Empty description="暂无图片" />
+            <Empty description={t("PhotoTypes.noPhotos")} />
           ) : (
             // 非搜索模式：按主题分类显示
             <Row gutter={[24, 24]}>
@@ -303,15 +358,19 @@ export default function PhotoTypesPage() {
                   <div style={{ marginBottom: 0 }}>
                     {/* 第一行：主题名字 */}
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                      <Title level={4} style={{ margin: 0 }}>{topic}</Title>
+                      <Title level={4} style={{ margin: 0 }}>{getTranslatedTopic(topic)}</Title>
                       <Tag color="blue">{topicGrouped[topic].items.length}</Tag>
                     </div>
                     {/* 第二行：该主题下所有子类（横向排列；每个子类仅展示1张样例） */}
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
                       {topicGrouped[topic].subTypes.map((sub) => {
                         const subItems = topicGrouped[topic].items.filter(p => {
-                          const t = p.type && typeof p.type === "string" && p.type.trim().length > 0 ? p.type : "未分类";
-                          return t === sub;
+                        const typeLabel =
+                          p.type && typeof p.type === "string" && p.type.trim().length > 0
+                            ? p.type
+                            : t("PhotoTypes.uncategorized");
+                        return typeLabel === sub;
+
                         });
                         if (subItems.length === 0) return null;
                         const p = subItems[0];
@@ -319,7 +378,7 @@ export default function PhotoTypesPage() {
                           <div key={sub} style={{ width: 180, display: "flex", flexDirection: "column", gap: 6 }}>
                             <Tag color="geekblue" style={{ width: "fit-content" }}>
                               <Link href={`/photo/type/${encodeURIComponent(sub)}`}>
-                                {sub}（{subItems.length}）
+                                {getTranslatedSubcategory(sub)}（{subItems.length}）
                               </Link>
                             </Tag>
                             <Link href={`/photo/type/${encodeURIComponent(sub)}`}>

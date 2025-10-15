@@ -10,6 +10,7 @@ import ImagePreviewModal from "../../components/ImagePreviewModal";
 import styles from "../../styles/home.module.css";
 import { get_photo_info } from "../../util/aws-api";
 import { parseExifInfoFromJson, ImageExifInfo } from "../../util/image-exif-utils";
+import { useI18n } from "../../contexts/I18nContext";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -71,6 +72,7 @@ interface PhotoInfoData {
 const PhotoDetailPage = () => {
   const router = useRouter();
   const { id } = router.query;
+  const { t } = useI18n();
   const { addToCart, isInCart, cartItems, removeFromCart, clearCart, markAsPurchased } = useCart();
   const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large' | 'special'>('medium');
   const [photoInfo, setPhotoInfo] = useState<PhotoInfoData | null>(null);
@@ -103,12 +105,12 @@ const PhotoDetailPage = () => {
           setPhotoInfo(result.data);
           console.log('Photo info received:', result.data);
         } else {
-          setError(result.message || '获取图片信息失败');
+          setError(result.message || t("PhotoDetail.cannotLoadInfo"));
           console.error('Failed to get photo info:', result.message);
         }
       } catch (error) {
         console.error('Error fetching photo info:', error);
-        setError('获取图片信息时发生错误');
+        setError(t("PhotoDetail.cannotLoadInfo"));
       } finally {
         setLoading(false);
       }
@@ -207,7 +209,7 @@ const PhotoDetailPage = () => {
       <div className={styles.container}>
         <div style={{ textAlign: 'center', padding: '40px' }}>
           <Spin size="large" />
-          <div style={{ marginTop: '16px' }}>正在加载图片信息...</div>
+          <div style={{ marginTop: '16px' }}>{t("PhotoDetail.loadingInfo")}</div>
         </div>
       </div>
     );
@@ -217,10 +219,10 @@ const PhotoDetailPage = () => {
   if (error || !photoInfo) {
     return (
       <div className={styles.container}>
-        <Title level={2}>图片未找到</Title>
-        <Text type="secondary">{error || '无法加载图片信息'}</Text>
+        <Title level={2}>{t("PhotoDetail.photoNotFound")}</Title>
+        <Text type="secondary">{error || t("PhotoDetail.cannotLoadInfo")}</Text>
         <div style={{ marginTop: '16px' }}>
-          <Button onClick={() => router.push("/")}>返回图片</Button>
+          <Button onClick={() => router.push("/")}>{t("PhotoDetail.backToPhotos")}</Button>
         </div>
       </div>
     );
@@ -228,10 +230,10 @@ const PhotoDetailPage = () => {
 
   // 价格选项
   const sizeOptions = [
-    { size: 'small', label: '小图片', price: parseFloat(photoInfo.prices.small.S) },
-    { size: 'medium', label: '中图片', price: parseFloat(photoInfo.prices.medium.S) },
-    { size: 'large', label: '大图片', price: parseFloat(photoInfo.prices.large.S) },
-    ...(photoInfo.prices.special?.S ? [{ size: 'special', label: '特殊尺寸', price: parseFloat(photoInfo.prices.special.S) }] : [])
+    { size: 'small', label: t("PhotoDetail.sizeOptions.small"), price: parseFloat(photoInfo.prices.small.S) },
+    { size: 'medium', label: t("PhotoDetail.sizeOptions.medium"), price: parseFloat(photoInfo.prices.medium.S) },
+    { size: 'large', label: t("PhotoDetail.sizeOptions.large"), price: parseFloat(photoInfo.prices.large.S) },
+    ...(photoInfo.prices.special?.S ? [{ size: 'special', label: t("PhotoDetail.sizeOptions.special"), price: parseFloat(photoInfo.prices.special.S) }] : [])
   ];
 
   // 过滤掉价格为0的尺寸
@@ -245,7 +247,7 @@ const PhotoDetailPage = () => {
     const { name, phone, address } = contactInfo;
     const phoneOk = /[\d\s+\-()]{7,20}/.test(phone || '');
     if (!name || !address || !phoneOk ) {
-      message.error('请先填写完整且有效的联系方式（姓名、电话、地址）');
+      message.error(t("PhotoDetail.contactInfoRequired"));
       return;
     }
     if (photoInfo && selectedSizeData) {
@@ -259,7 +261,7 @@ const PhotoDetailPage = () => {
       });
       // 存储一次联系方式，供后续购买页或后台使用
       try { localStorage.setItem('contact_info', JSON.stringify(contactInfo)); } catch {}
-      message.success(`已添加${selectedSizeData.label}到购物车！`);
+      message.success(t("PhotoDetail.addToCartSuccess").replace("{size}", selectedSizeData.label));
     }
   };
 
@@ -298,7 +300,7 @@ const PhotoDetailPage = () => {
               onClick={() => router.push("/")}
               size="middle"
             >
-              返回图片
+              {t("PhotoDetail.backToPhotos")}
             </Button>
             <ShoppingCart 
               items={cartItems}
@@ -352,8 +354,8 @@ const PhotoDetailPage = () => {
                       background: '#f5f5f5',
                       color: '#666'
                     }}>
-                      <div style={{ fontSize: '16px', marginBottom: '8px' }}>图片加载中...</div>
-                      <div style={{ fontSize: '12px' }}>正在获取预授权链接</div>
+                      <div style={{ fontSize: '16px', marginBottom: '8px' }}>{t("PhotoDetail.imageLoading")}</div>
+                      <div style={{ fontSize: '12px' }}>{t("PhotoDetail.gettingPresignedUrl")}</div>
                     </div>
                   )}
                 </div>
@@ -375,20 +377,20 @@ const PhotoDetailPage = () => {
                   
                   {/* 图片信息 */}
                   <div style={{ marginTop: '16px', fontSize: '12px', color: '#666' }}>
-                    <div>图片ID: {photoInfo.exifInfo ? (() => { try { const exifData: ImageExifInfo = parseExifInfoFromJson(photoInfo.exifInfo); return exifData.dateTaken ? `${formatExifDate(exifData.dateTaken)} ` : ''; } catch { return ''; } })() : ''}- {photoInfo.filename_id || photoInfo.id}</div>
+                    <div>{t("PhotoDetail.photoInfo.photoId")} {photoInfo.exifInfo ? (() => { try { const exifData: ImageExifInfo = parseExifInfoFromJson(photoInfo.exifInfo); return exifData.dateTaken ? `${formatExifDate(exifData.dateTaken)} ` : ''; } catch { return ''; } })() : ''}- {photoInfo.filename_id || photoInfo.id}</div>
                     {/* <div>上传时间: {new Date(photoInfo.upload_datetime).toLocaleString()}</div>
                     <div>设置时间: {new Date(photoInfo.setting_datetime).toLocaleString()}</div> */}
                     {photoInfo.size && (
-                      <div>尺寸: {photoInfo.size}</div>
+                      <div>{t("PhotoDetail.photoInfo.size")} {photoInfo.size}</div>
                     )}
                     {photoInfo.type && (
-                      <div>主题: {photoInfo.topic}</div>
+                      <div>{t("PhotoDetail.photoInfo.topic")} {photoInfo.topic}</div>
                     )}
                     {photoInfo.type && (
-                      <div>类型: {photoInfo.type}</div>
+                      <div>{t("PhotoDetail.photoInfo.type")} {photoInfo.type}</div>
                     )}
                     {photoInfo.place && (
-                      <div>拍摄地点: {photoInfo.place}</div>
+                      <div>{t("PhotoDetail.photoInfo.place")} {photoInfo.place}</div>
                     )}
                     {/* {photoInfo.photo_year && (
                       <div>拍摄时间（年）: {photoInfo.photo_year}</div>
@@ -400,7 +402,7 @@ const PhotoDetailPage = () => {
                           <div style={{ marginTop: '2px' }}>
                             {/* <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>EXIF信息:</div> */}
                             {exifData.dateTaken && (
-                              <div>拍摄日期: {formatExifDate(exifData.dateTaken)}</div>
+                              <div>{t("PhotoDetail.photoInfo.dateTaken")} {formatExifDate(exifData.dateTaken)}</div>
                             )}
                             {/* {exifData.make && exifData.model && (
                               <div>相机: {exifData.make} {exifData.model}</div>
@@ -443,7 +445,7 @@ const PhotoDetailPage = () => {
                   {/* 尺寸选择 */}
                   <div className={styles.sizeSelectionContainer}>
                     <Text strong style={{ fontSize: '16px', display: 'block', marginBottom: '12px' }}>
-                      选择尺寸:
+                      {t("PhotoDetail.selectSize")}
                     </Text>
                     <Radio.Group 
                       value={selectedSize} 
@@ -486,13 +488,13 @@ const PhotoDetailPage = () => {
 
                   {/* 当前选择的价格 */}
                   <div className={styles.priceDisplay}>
-                    <Text strong style={{ fontSize: '16px' }}>当前选择: </Text>
+                    <Text strong style={{ fontSize: '16px' }}>{t("PhotoDetail.currentSelection")}</Text>
                     {selectedSizeData ? (
                       <Text style={{ fontSize: '18px', color: '#52c41a', fontWeight: 'bold' }}>
                         {selectedSizeData.label} - CAD ${currentPrice}
                       </Text>
                     ) : (
-                      <Text type="secondary" style={{ fontSize: '14px' }}>暂无可选尺寸</Text>
+                      <Text type="secondary" style={{ fontSize: '14px' }}>{t("PhotoDetail.noSizeAvailable")}</Text>
                     )}
                   </div>
                 </div>
@@ -504,8 +506,8 @@ const PhotoDetailPage = () => {
                   <Alert 
                     type="info" 
                     showIcon 
-                    message={<span style={{ fontSize: 12 }}>温馨提示</span>} 
-                    description={<span style={{ fontSize: 12, lineHeight: 1.4 }}>购买为实物邮寄服务：请准确填写收件人的姓名、电话、邮寄地址与邮箱，我们将使用实物方式寄送图片（不包括图片框架）。</span>} 
+                    message={<span style={{ fontSize: 12 }}>{t("PhotoDetail.warmTip")}</span>} 
+                    description={<span style={{ fontSize: 12, lineHeight: 1.4 }}>{t("PhotoDetail.warmTipContent")}</span>} 
                     style={{ marginBottom: 8, padding: 8 }} 
                   />
 
@@ -520,18 +522,18 @@ const PhotoDetailPage = () => {
                   >
                     <Row gutter={8}>
                       <Col span={12}>
-                        <Form.Item label={<span style={{ fontSize: 12 }}>收件姓名</span>} name="name" rules={[{ required: true, message: '请输入姓名' }]} style={{ marginBottom: 8 }}> 
-                          <Input placeholder="请输入收件人姓名" size="small" />
+                        <Form.Item label={<span style={{ fontSize: 12 }}>{t("PhotoDetail.contactForm.name")}</span>} name="name" rules={[{ required: true, message: t("PhotoDetail.contactForm.nameRequired") }]} style={{ marginBottom: 8 }}> 
+                          <Input placeholder={t("PhotoDetail.contactForm.namePlaceholder")} size="small" />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item label={<span style={{ fontSize: 12 }}>收件电话</span>} name="phone" rules={[{ required: true, message: '请输入电话' }]} style={{ marginBottom: 8 }}> 
-                          <Input placeholder="+1 234-567-8901" size="small" />
+                        <Form.Item label={<span style={{ fontSize: 12 }}>{t("PhotoDetail.contactForm.phone")}</span>} name="phone" rules={[{ required: true, message: t("PhotoDetail.contactForm.phoneRequired") }]} style={{ marginBottom: 8 }}> 
+                          <Input placeholder={t("PhotoDetail.contactForm.phonePlaceholder")} size="small" />
                         </Form.Item>
                       </Col>
                     </Row>
-                    <Form.Item label={<span style={{ fontSize: 12 }}>邮寄地址</span>} name="address" rules={[{ required: true, message: '请输入邮寄地址' }]} style={{ marginBottom: 8 }}> 
-                      <Input placeholder="门牌号、街道、城市、省、邮编" size="small" />
+                    <Form.Item label={<span style={{ fontSize: 12 }}>{t("PhotoDetail.contactForm.address")}</span>} name="address" rules={[{ required: true, message: t("PhotoDetail.contactForm.addressRequired") }]} style={{ marginBottom: 8 }}> 
+                      <Input placeholder={t("PhotoDetail.contactForm.addressPlaceholder")} size="small" />
                     </Form.Item>
                   </Form>
 
@@ -544,7 +546,7 @@ const PhotoDetailPage = () => {
                     disabled={!selectedSizeData || isCurrentSizeInCart()}
                     className={styles.purchaseButton}
                   >
-                    {getCartItem()?.purchased ? "已购买" : (!selectedSizeData ? "暂不可购买" : (isCurrentSizeInCart() ? "已加入购物车" : "立即购买"))}
+                    {getCartItem()?.purchased ? t("PhotoDetail.purchased") : (!selectedSizeData ? t("PhotoDetail.notAvailable") : (isCurrentSizeInCart() ? t("PhotoDetail.inCart") : t("PhotoDetail.buyNow")))}
                   </Button>
                 </div>
               </div>

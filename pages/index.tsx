@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Carousel, Spin, Typography } from "antd";
 import styles from "../styles/home.module.css";
 import { get_photos_presigned_url } from "../util/aws-api";
+import { useI18n } from "../contexts/I18nContext";
 
 interface SlidePhoto {
   id: string;
@@ -12,6 +13,7 @@ interface SlidePhoto {
 }
 
 const SlideshowHome: React.FC = () => {
+  const { t } = useI18n();
   const [photos, setPhotos] = useState<SlidePhoto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -121,12 +123,13 @@ const SlideshowHome: React.FC = () => {
   return (
     <>
       <Head>
-        <title>主页 - 精美图片</title>
+        <title>{t("Home.title")}</title>
       </Head>
       <div style={{ minHeight: "calc(100vh - 64px)", background: "#000" }}>
         {loading || !imagesReady ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
             <Spin size="large" />
+            <span style={{ marginLeft: "16px", color: "#fff" }}>{t("Common.loading")}</span>
           </div>
         ) : (
           <Carousel
@@ -170,9 +173,9 @@ const SlideshowHome: React.FC = () => {
                     transition: "opacity 800ms ease 200ms",
                   }}
                 >
-                  <div className={styles.heroLineTop}>探寻地球上瑰丽多彩的“花花视界”</div>
-                  <div className={styles.heroTitle}>自然风光摄影</div>
-                  <div className={styles.heroLineBottom}>跟着连众去探索世界大自然之绮丽</div>
+                  <div className={styles.heroLineTop}>{t("Home.heroSubtitle")}</div>
+                  <div className={styles.heroTitle}>{t("Home.heroTitle")}</div>
+                  <div className={styles.heroLineBottom}>{t("Home.heroDescription")}</div>
                 </div>
               </div>
             ))}

@@ -3,6 +3,7 @@ import { Badge, Button, Drawer, Card, Typography, Space, Divider, message, Check
 import { ShoppingCartOutlined, DeleteOutlined, CreditCardOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
 import PhotoImage from './PhotoImage';
+import { useI18n } from '../contexts/I18nContext';
 
 const { Title, Text } = Typography;
 
@@ -22,6 +23,7 @@ interface ShoppingCartProps {
 }
 
 const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClearCart }) => {
+  const { t } = useI18n();
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
@@ -66,10 +68,10 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
       const shortFileName = fileName.length > 7 ? fileName.substring(0, 7) + '...' : fileName;
       
       // 添加尺寸标签
-      const sizeLabel = size === 'small' ? '小' : size === 'medium' ? '中' : '大';
+      const sizeLabel = size === 'small' ? t("Photos.size") : size === 'medium' ? t("Photos.size") : t("Photos.size");
       return `${shortFileName} (${sizeLabel})`;
     }
-    return item.alt || `图片 ${item.id}`;
+    return item.alt || `${t("Photos.title")} ${item.id}`;
   };
 
   const totalAmount = items.reduce((sum, item) => sum + item.price, 0);
@@ -91,9 +93,9 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
   const handleCheckout = () => {
     if (selectedUnpurchasedItems.length === 0) {
       if (unpurchasedItems.length === 0) {
-        message.warning('没有待购买的商品');
+        message.warning(t("Cart.empty"));
       } else {
-        message.warning('请选择要支付的商品');
+        message.warning(t("Cart.checkout"));
       }
       return;
     }
@@ -155,14 +157,14 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
         title={
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: 'clamp(14px, 3vw, 16px)' }}>
-              购物车 ({unpurchasedItems.length} 件待购买, {purchasedItems.length} 件已购买)
+              {t("Cart.title")} ({unpurchasedItems.length} {t("Cart.items")}, {purchasedItems.length} {t("Cart.items")})
             </span>
             {items.length > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {unpurchasedItems.length > 0 && (
                   <Space size={8}>
-                    <Button size="small" onClick={handleSelectAll}>全选未购买</Button>
-                    <Button size="small" onClick={handleClearSelection}>清除选择</Button>
+                    <Button size="small" onClick={handleSelectAll}>{t("Cart.select")}</Button>
+                    <Button size="small" onClick={handleClearSelection}>{t("Common.clear")}</Button>
                   </Space>
                 )}
                 <Button 
@@ -171,7 +173,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
                   size="small"
                   onClick={onClearCart}
                 >
-                  清空购物车
+                  {t("Cart.clearCart")}
                 </Button>
               </div>
             )}
@@ -188,12 +190,12 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
                 {selectedUnpurchasedItems.length > 0 ? (
                   <>
                     <Text strong style={{ fontSize: '18px' }}>
-                      已选 {selectedUnpurchasedItems.length} 件，合计: {formatPrice(selectedTotalAmount)}
+                      {t("Cart.select")} {selectedUnpurchasedItems.length} {t("Cart.items")}, {t("Cart.total")}: {formatPrice(selectedTotalAmount)}
                     </Text>
                   </>
                 ) : (
                   <Text type="secondary" style={{ fontSize: '14px' }}>
-                    请选择要支付的商品
+                    {t("Cart.checkout")}
                   </Text>
                 )}
               </div>
@@ -205,7 +207,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
                 style={{ width: '100%' }}
                 disabled={selectedUnpurchasedItems.length === 0}
               >
-                {selectedUnpurchasedItems.length > 0 ? `支付已选 ${selectedUnpurchasedItems.length} 件` : '选择商品后可支付'}
+                {selectedUnpurchasedItems.length > 0 ? `${t("Payment.placeOrder")} ${selectedUnpurchasedItems.length} ${t("Cart.items")}` : t("Cart.checkout")}
               </Button>
             </div>
           ) : null
@@ -214,7 +216,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
         {items.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
             <ShoppingCartOutlined style={{ fontSize: '48px', color: '#d9d9d9', marginBottom: '16px' }} />
-            <Text type="secondary">购物车为空</Text>
+            <Text type="secondary">{t("Cart.empty")}</Text>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -264,7 +266,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
                       </Text>
                       {item.purchased && (
                         <Text type="success" style={{ fontSize: '12px' }}>
-                          ✓ 已购买
+                          ✓ {t("Payment.success")}
                         </Text>
                       )}
                     </div>
@@ -293,12 +295,12 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
             
             <div style={{ textAlign: 'right' }}>
               <Text strong style={{ fontSize: '16px' }}>
-                总计: {formatPrice(totalAmount)}
+                {t("Cart.total")}: {formatPrice(totalAmount)}
               </Text>
               {purchasedItems.length > 0 && (
                 <div style={{ marginTop: '8px' }}>
                   <Text type="success" style={{ fontSize: '14px' }}>
-                    已购买: {formatPrice(purchasedItems.reduce((sum, item) => sum + item.price, 0))}
+                    {t("Payment.success")}: {formatPrice(purchasedItems.reduce((sum, item) => sum + item.price, 0))}
                   </Text>
                 </div>
               )}

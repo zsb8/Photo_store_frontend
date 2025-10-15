@@ -4,51 +4,44 @@ import { useRouter } from "next/router";
 import { Layout, Menu, Select } from "antd";
 import type { MenuProps } from "antd";
 import styles from "../styles/site-header.module.css";
+import { useI18n } from "../contexts/I18nContext";
 
 const { Header } = Layout;
 
-const menuItems: MenuProps["items"] = [
-  { key: "/", label: <Link href="/">主页</Link> },
-  { key: "/photo_types", label: <Link href="/photo_types">图片</Link> },
-  { key: "/print-store", label: <Link href="/print-store">购买</Link> },
-  { key: "/about", label: <Link href="/about">作者</Link> },
-  { key: "/contact", label: <Link href="/contact">联系</Link> },
-  { key: "/cart", label: <Link href="/cart">购物车</Link> },
-  { key: "/photos-backend-management", label: <Link href="/photos-backend-management">编辑</Link> }
-];
-
-const languageOptions = [
-  { value: "zh", label: "中文" },
-  { value: "en", label: "English" },
-  { value: "fr", label: "Français" }
-];
-
 const SiteHeader: React.FC = () => {
   const router = useRouter();
+  const { language, setLanguage, t } = useI18n();
   const [current, setCurrent] = useState<string>("/");
-  const [language, setLanguage] = useState<string>("zh");
 
   useEffect(() => {
     setCurrent(router.pathname === "/" ? "/" : router.pathname.split("?")[0]);
   }, [router.pathname]);
 
-  useEffect(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem("site_language") : null;
-    if (saved) setLanguage(saved);
-  }, []);
+  const menuItems: MenuProps["items"] = [
+    { key: "/", label: <Link href="/">{t("Navigation.home")}</Link> },
+    { key: "/photo_types", label: <Link href="/photo_types">{t("Navigation.photos")}</Link> },
+    { key: "/print-store", label: <Link href="/print-store">{t("Navigation.purchase")}</Link> },
+    { key: "/about", label: <Link href="/about">{t("Navigation.about")}</Link> },
+    { key: "/contact", label: <Link href="/contact">{t("Navigation.contact")}</Link> },
+    { key: "/cart", label: <Link href="/cart">{t("Navigation.cart")}</Link> },
+    { key: "/photos-backend-management", label: <Link href="/photos-backend-management">{t("Navigation.edit")}</Link> }
+  ];
+
+  const languageOptions = [
+    { value: "zh", label: t("Common.zh") },
+    { value: "en", label: t("Common.en") },
+    { value: "fr", label: t("Common.fr") }
+  ];
 
   const onSelectLanguage = (value: string) => {
-    setLanguage(value);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("site_language", value);
-    }
+    setLanguage(value as "zh" | "en" | "fr");
   };
 
   return (
     <Header className={styles.header}>
       <div className={styles.brand}>
         <Link href="/" className={styles.brandLink}>
-          精美图片销售
+          {t("Common.siteName")}
         </Link>
       </div>
       <div className={styles.navArea}>
@@ -60,7 +53,7 @@ const SiteHeader: React.FC = () => {
           theme="dark"
         />
         <div className={styles.langSelectWrapper}>
-          <span className={styles.langLabel}>中/英/法</span>
+          <span className={styles.langLabel}>{t("Common.language")}</span>
           <Select
             value={language}
             onChange={onSelectLanguage}

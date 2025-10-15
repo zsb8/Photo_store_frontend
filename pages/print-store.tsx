@@ -8,6 +8,7 @@ import { useCart } from "../contexts/CartContext";
 import ShoppingCart from "../components/ShoppingCart";
 import styles from "../styles/home.module.css";
 import { get_photos_presigned_url, get_all_photo_settings } from "../util/aws-api";
+import { useI18n } from "../contexts/I18nContext";
 
 const { Title, Text } = Typography;
 
@@ -24,6 +25,7 @@ interface PhotoItem {
 
 const PrintStorePage = () => {
   const router = useRouter();
+  const { t } = useI18n();
   const { cartItems, removeFromCart, clearCart } = useCart();
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -59,11 +61,11 @@ const PrintStorePage = () => {
           });
           setPhotos(convertedPhotos);
         } else {
-          message.error("暂无图片可售");
+          message.error(t("PrintStore.noPhotosAvailable"));
           setPhotos([]);
         }
       } catch (error) {
-        message.error("获取图片时发生错误");
+        message.error(t("Photos.loadingPhotos"));
         setPhotos([]);
       } finally {
         setLoading(false);
@@ -79,8 +81,8 @@ const PrintStorePage = () => {
   return (
     <>
       <Head>
-        <title>作品 - 精美图片销售</title>
-        <meta name="description" content="购买精美图片，高质量摄影作品" />
+        <title>{t("PrintStore.pageTitle")}</title>
+        <meta name="description" content={t("PrintStore.pageDescription")} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/logo.png" />
       </Head>
@@ -96,7 +98,7 @@ const PrintStorePage = () => {
             gap: "16px",
           }}>
             <Title level={1} style={{ margin: 0, fontSize: "clamp(24px, 5vw, 32px)", textAlign: "center", flex: "1 1 auto" }}>
-              作品
+              {t("PrintStore.title")}
             </Title>
             <ShoppingCart items={cartItems} onRemoveItem={removeFromCart} onClearCart={clearCart} />
           </div>
@@ -112,11 +114,11 @@ const PrintStorePage = () => {
             {loading ? (
               <Col span={24} style={{ textAlign: "center", padding: "40px" }}>
                 <Spin size="large" />
-                <div style={{ marginTop: "16px" }}>正在加载图片...</div>
+                <div style={{ marginTop: "16px" }}>{t("PrintStore.loading")}</div>
               </Col>
             ) : photos.length === 0 ? (
               <Col span={24} style={{ textAlign: "center", padding: "40px" }}>
-                <Text type="secondary">暂无图片可售。</Text>
+                <Text type="secondary">{t("PrintStore.noPhotosAvailable")}</Text>
               </Col>
             ) : (
               photos
@@ -144,10 +146,10 @@ const PrintStorePage = () => {
                             }
                             actions={[
                               <Button key="view" type="text" icon={<EyeOutlined />} onClick={() => handlePhotoClick(photo.id)}>
-                                查看详情
+                                {t("PrintStore.viewDetails")}
                               </Button>,
                               <Button key="buy" type="primary" icon={<ShoppingCartOutlined />} onClick={() => handlePhotoClick(photo.id)}>
-                                立即购买
+                                {t("PrintStore.buyNow")}
                               </Button>,
                             ]}
                             style={{ border: "2px solid #f0f0f0", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", marginBottom: "16px", position: "relative", overflow: "hidden" }}
@@ -158,7 +160,7 @@ const PrintStorePage = () => {
                           {index < photos.length - 1 && (
                             <div className={styles.mobileDivider} style={{ display: "none", height: "3px", background: "linear-gradient(90deg, #f0f0f0, #1890ff, #f0f0f0)", margin: "24px 0", borderRadius: "2px", position: "relative", boxShadow: "0 2px 4px rgba(24, 144, 255, 0.3)" }}>
                               <div style={{ position: "absolute", top: "-10px", left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #1890ff, #40a9ff)", color: "white", padding: "6px 16px", borderRadius: "16px", fontSize: "12px", fontWeight: "bold", whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(24, 144, 255, 0.4)", border: "2px solid white" }}>
-                                ↓ 下一个图片 ↓
+                                {t("PrintStore.nextPhoto")}
                               </div>
                             </div>
                           )}

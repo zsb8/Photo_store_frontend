@@ -2,20 +2,23 @@ import Head from "next/head";
 import React from "react";
 import { Typography } from "antd";
 import styles from "../styles/home.module.css";
+import { useI18n } from "../contexts/I18nContext";
 
 const { Title, Paragraph } = Typography as any;
 
 const ContactPage = () => {
+  const { t } = useI18n();
+  
   return (
     <>
       <Head>
-        <title>联系</title>
+        <title>{t("Contact.title")}</title>
       </Head>
       <main className={styles.main}>
         <div className={styles.container}>
-          <Title level={1} style={{ textAlign: "center", marginBottom: 24 }}>联系</Title>
+          <Title level={1} style={{ textAlign: "center", marginBottom: 24 }}>{t("Contact.title")}</Title>
           <Paragraph style={{ fontSize: 16, lineHeight: 1.9 }}>
-            如果有任何疑问和建议，请采用如下方式联系：<br></br>电子邮件：XXXX@google.com <br></br> 微信：XXX   
+            {t("Contact.formDescription")}<br></br>{t("Contact.email")}：XXXX@google.com <br></br> 微信：XXX   
           </Paragraph>
         </div>
       </main>

@@ -10,6 +10,7 @@ import { get_photos_presigned_url } from "@/util/aws-api";
 import PaymentButton from "../components/PaymentButton";
 import { useCart } from "../contexts/CartContext";
 import { CartItem } from "../components/ShoppingCart";
+import { useI18n } from "../contexts/I18nContext";
 
 interface AWSResponse {
   message: string;
@@ -36,6 +37,7 @@ const DEFAULT_LOGO = "/logo-default.png";
 
 export default function ReportDesigner() {
   const router = useRouter();
+  const { t } = useI18n();
   const { cartItems, getCartTotal, getUnpurchasedItems } = useCart();
   const [unpurchasedTotal, setUnpurchasedTotal] = useState<number>(0);
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
@@ -51,11 +53,11 @@ export default function ReportDesigner() {
         if (result.success) {
           setPhotos(result.data);
         } else {
-          message.error('获取图片失败: ' + result.message);
+          message.error(t("Photos.loadingPhotos") + ': ' + result.message);
         }
       } catch (error) {
         console.error('获取图片时发生错误:', error);
-        message.error('获取图片时发生错误');
+        message.error(t("Photos.loadingPhotos"));
       } finally {
         setLoading(false);
       }
@@ -80,7 +82,7 @@ export default function ReportDesigner() {
 
   const menuItems: MenuProps["items"] = [
     {
-      label: "Logout",
+      label: t("Navigation.logout"),
       key: "logout",
       icon: <LogoutOutlined />,
     },
@@ -95,7 +97,7 @@ export default function ReportDesigner() {
   return (
     <Layout className={styles.layout}>
       <Header className={styles.header}>
-        <div className={styles.logo}>Purchase Photo</div>
+        <div className={styles.logo}>{t("Payment.title")}</div>
         <div className={styles.headerActions}>
           <Button 
             type="primary" 
@@ -109,40 +111,40 @@ export default function ReportDesigner() {
               fontSize: '14px'
             }}
           >
-            退出登录
+            {t("Navigation.logout")}
           </Button>
         </div>
       </Header>
       <Content className={styles.content}>
         <div style={{ padding: '24px' }}>
           <Title level={2} className={styles.pageTitle}>
-            欢迎使用 Purchase Photo支付页面
+            {t("Home.welcome")} - {t("Payment.title")}
           </Title>
           <div className={styles.cardGrid}>
             <Card 
-              title="支付服务" 
+              title={t("Payment.paymentMethod")} 
               extra={<DollarOutlined />}
               style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
             >
-              <Text>安全便捷的支付解决方案</Text>
+              <Text>{t("Payment.title")}</Text>
               <div style={{ marginTop: '16px' }}>
                 <PaymentButton
                   amount={unpurchasedTotal > 0 ? unpurchasedTotal : 0.50}
                   currency="cad"
-                  description={unpurchasedTotal > 0 ? `购买未付款商品 (${unpurchasedTotal.toFixed(2)} CAD)` : "Purchase Photo服务"}
-                  buttonText={unpurchasedTotal > 0 ? `支付购物车商品 (${unpurchasedTotal.toFixed(2)} CAD)` : "立即支付"}
+                  description={unpurchasedTotal > 0 ? `${t("Cart.items")} (${unpurchasedTotal.toFixed(2)} CAD)` : t("Payment.title")}
+                  buttonText={unpurchasedTotal > 0 ? `${t("Payment.placeOrder")} (${unpurchasedTotal.toFixed(2)} CAD)` : t("Payment.placeOrder")}
                   buttonType="primary"
                   buttonSize="middle"
                   onSuccess={(sessionId) => {
                     console.log('Payment session created:', sessionId);
                     console.log('Payment amount used:', unpurchasedTotal > 0 ? unpurchasedTotal : 0.50);
                     // 只记录会话创建，不标记为已购买
-                    message.success('正在跳转到支付页面...');
+                    message.success(t("Payment.processing"));
                   }}
                   onError={(error) => {
                     console.error('Payment error:', error);
                     console.error('Payment amount that failed:', unpurchasedTotal > 0 ? unpurchasedTotal : 0.50);
-                    message.error('创建支付会话失败，请重试');
+                    message.error(t("Payment.failed"));
                   }}
                 />
               </div>
@@ -167,10 +169,9 @@ export default function ReportDesigner() {
           </div>
 
           <div style={{ marginTop: '32px', padding: '24px', background: '#f0f2f5', borderRadius: '8px' }}>
-            <Title level={3}>感谢您的购买</Title>
+            <Title level={3}>{t("Messages.thankYou")}</Title>
             <Text>
-              感谢您选择我们的图片服务！我们致力于为您提供最优质的图片产品和最安全的支付体验。
-              您的满意是我们最大的动力，期待为您提供更多精彩的图片作品。
+              {t("About.description")}
             </Text>
           </div>
         </div>
