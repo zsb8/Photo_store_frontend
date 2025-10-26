@@ -233,9 +233,7 @@ export async function upload_photo(
                 });
             }
         }
-        console.log("!!!!-------帮我看下是不是这里图片描述变量总是空的导致这里永远无法执行到? description:", description)
         if(description){
-            console.log("!!!!-------难道因为时间不对称导致永远无法执行到这里？除非人工在页面上输入图片描述内容？")
             // 因为一般是选AI自动生成，而且AI自动生成很慢，所以一般来不及等待AI生成，这里就已经保存进去了。
             const record_id = result.result.record_id;
             const saveSettingsResult = await save_photo_settings(
@@ -346,8 +344,6 @@ export async function save_photo_settings(
     exifInfo?:string,
     filename_id?:string,  
 ): Promise<SavePhotoSettingsResponse> {
-    console.log("!!!!=====开始保存图片属性save_photo_settings", filename, title, prices, record_id);
-    console.log("!!!!=====我不确定这准备提交给API的是否是含有数字的exifInfo", exifInfo);
     const saveUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/save_photo_settings`;
     const saveData: SavePhotoSettingsRequest = {
         data: {
@@ -588,7 +584,6 @@ export async function upload_bigphoto(
             throw new Error(`S3 upload failed: ${response.status} ${response.statusText}`);
         }
 
-        console.log("!!!!!!!=========注意看图片描述是否是空的：", description);
         // 如果description为空，则使用AI生成图片描述
         if(!description){
             console.log("!!!!! ======大图片处理=====将File转换为base64并缩放到512高度")
@@ -623,10 +618,9 @@ export async function upload_bigphoto(
                 }
                 
                 const openai_photo_desc_multi_language_result = await openai_photo_desc_multi_language(finalPhotoData, filename);
-                console.log("!!!!!========送给OPENAI后的得到的结果是:", openai_photo_desc_multi_language_result)
                 description = JSON.stringify(openai_photo_desc_multi_language_result) ;
             } catch (aiError) {
-                console.error("!!!===完蛋了坏了坏了坏了，AI description generation failed:", aiError);
+                console.error("AI description generation failed:", aiError);
                 // 如果AI描述生成失败，设置一个默认描述
                 description = JSON.stringify({
                     ENG: "AI Photo description unavailable",
@@ -664,7 +658,6 @@ export async function upload_bigphoto(
                     record_id
                 );
                 if (!embeddingResult.success) {
-                    console.log("!!!!=====天啊, embedding失败了");
                     console.error("Photo desc embedding failed:", embeddingResult);
                 }                
             }
@@ -1092,7 +1085,6 @@ export async function delete_photo_from_dynamodb_s3(recordId: string): Promise<D
 export async function openai_photo_desc_multi_language(photo_data: string, file_name: string): Promise<AIPhotoDescResponse> {
     const createPhotoDescUrl = `https://${urlprefix}.execute-api.us-east-1.amazonaws.com/openai_photo_desc_multi_language`;
     try{
-        console.log("!!!!=====开始送给AI生成图片描述");
         const requestData: AIPhotoDescRequest = {
             photo_data: photo_data,
             file_name: file_name
@@ -1113,7 +1105,6 @@ export async function openai_photo_desc_multi_language(photo_data: string, file_
             CHS: chs
         };
     }catch(error){
-        console.error("!!!!=====AI生成图片描述失败",error);
         throw new Error(error instanceof Error ? error.message : 'AI生成图片描述失败');
     }
        
@@ -1128,23 +1119,19 @@ interface QueryAIPhotoIdResponse {
 export async function query_ai_photo_id(query: string): Promise<QueryAIPhotoIdResponse> {
     const createPhotoDescUrl = `https://${urlprefix_search}.execute-api.us-east-1.amazonaws.com/rag_search`;
     try{
-        console.log("!!!!=====开始用AI查询你要的图片的ID");
         const requestData: QueryAIPhotoIdRequest = {
             Question: query,
         };
         const requestParams = preparePostRequest(JSON.stringify(requestData));
         const response = await fetch(createPhotoDescUrl, requestParams);
         const jsonObj = await response.json();
-        console.log("!!!!!!!!====查询得到是啥：",jsonObj)
-        const res_list: any[] | undefined = jsonObj?.result
-        console.log("!!!!!!!!====查询得到res_list是啥：",res_list)   
+        const res_list: any[] | undefined = jsonObj?.result  
         if (!res_list) {
             throw new Error('AI查询图片ID失败');
         }
         const photo_id_list = res_list.map((i: any) => i?.metadata?.source)
         return { photo_id_list };
     }catch(error){
-        console.error("!!!!=====AI查询图片ID失败",error);
         throw new Error(error instanceof Error ? error.message : 'AI查询图片ID失败');
     }
        

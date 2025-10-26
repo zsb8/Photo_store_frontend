@@ -9,7 +9,9 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 // 确保在客户端加载Stripe
-const stripePromise = loadStripe('pk_test_A7jK4iCYHL045qgjjfzAfPxu');
+// const stripe_public_token = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY_TEST ?? "";
+const stripe_public_token = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY_LIVE ?? "";
+const stripePromise = loadStripe(stripe_public_token);
 
 interface PaymentFormData {
   amount: number;

@@ -113,39 +113,40 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     return cartItems.reduce((sum, item) => sum + item.price, 0);
   };
 
-  const markAsPurchased = () => {
+  const markAsPurchased = async () => {
     console.log('=== MARK AS PURCHASED ===');
     console.log('Current cart items before marking:', cartItems);
-    let selectedIds: Array<string> | null = null;
-    if (typeof window !== 'undefined') {
-      try {
-        const savedIds = localStorage.getItem('cartSelectedIds');
-        if (savedIds) {
-          const parsed: Array<string | number> = JSON.parse(savedIds);
-          selectedIds = parsed.map(p => String(p));
-          console.log('Marking selected IDs as purchased:', selectedIds);
-        }
-      } catch (e) {
-        console.warn('Failed to parse cartItems from localStorage for marking purchased');
-      }
-    }
-    setCartItems(prev => {
-      const updatedItems = prev.map(item => {
-        if (selectedIds && selectedIds.length > 0) {
-          return selectedIds.includes(String(item.id)) ? { ...item, purchased: true } : item;
-        }
-        return { ...item, purchased: true };
+    
+    // 创建一个新的Promise来确保状态更新完成
+    await new Promise<void>((resolve) => {
+      setCartItems(prev => {
+        const updatedItems = prev.map(item => ({
+          ...item,
+          purchased: true
+        }));
+        console.log('Marking all items as purchased');
+        return updatedItems;
       });
-      console.log('Updated cart items after marking:', updatedItems);
-      return updatedItems;
+      
+      // 使用setTimeout确保状态更新已经完成
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          // 更新localStorage中的购物车数据
+          const updatedItems = cartItems.map(item => ({
+            ...item,
+            purchased: true
+          }));
+          localStorage.setItem('cartItems', JSON.stringify(updatedItems));
+          
+          // 清除选择信息与购物车总金额
+          localStorage.removeItem('cartSelectedIds');
+          localStorage.removeItem('cartSelectedTotal');
+          localStorage.removeItem('cartTotal');
+          console.log('Updated cart items in localStorage and cleared selection');
+        }
+        resolve();
+      }, 100);
     });
-    // 清除选择信息与购物车总金额
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('cartSelectedIds');
-      localStorage.removeItem('cartSelectedTotal');
-      localStorage.removeItem('cartTotal');
-      console.log('Removed cartTotal from localStorage');
-    }
   };
 
   const getUnpurchasedItems = () => {

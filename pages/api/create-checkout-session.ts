@@ -1,13 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 
+// 确保在客户端加载Stripe
+// const stripe_secret_token = process.env.STRIPE_SECRET_KEY_TEST ?? "";
+const stripe_secret_token = process.env.STRIPE_SECRET_KEY_LIVE ?? "";
 
-const stripe_token = process.env.STRIPE_TOKEN ?? "";
-
-// const stripe = new Stripe('sk_test_Hrs6SAopgFPF0bZXSN3f6ELN', {
-//   apiVersion: '2025-08-27.basil',
-// });
-const stripe = new Stripe(stripe_token, {
+const stripe = new Stripe(stripe_secret_token, {
   apiVersion: '2025-08-27.basil',
 });
 
@@ -66,7 +64,6 @@ export default async function handler(
       success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/payment-cancelled`,
     });
-
     console.log('API: Successfully created session:', session.id);
     res.status(200).json({ sessionId: session.id });
   } catch (error) {

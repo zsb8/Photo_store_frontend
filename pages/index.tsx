@@ -22,7 +22,6 @@ const SlideshowHome: React.FC = () => {
       try {
         setLoading(true);
         const resp = await get_photos_presigned_url();
-        console.log('!!!!!=====我看看获得的图片是否带有is_home_carousel信息', resp.data);
         if (resp && resp.data) {
           const list = resp.data
             .filter((p: any) =>

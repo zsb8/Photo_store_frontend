@@ -12,7 +12,6 @@ interface EditPhotosModuleProps {
 }
 
 const EditPhotosModule: React.FC<EditPhotosModuleProps> = ({ photoList, onRefresh, onOpenEdit, onDelete }) => {
-  console.log('!@!!@!@!!!===能看到特殊尺寸图片么===photoList', photoList);
   const columns = [
     {
       title: '预览',

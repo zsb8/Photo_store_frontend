@@ -32,7 +32,6 @@ const PaymentSuccessPage: React.FC = () => {
       const response = await fetch(`/api/retrieve-session?session_id=${session_id}`);
       if (response.ok) {
         const sessionData = await response.json();
-        console.log('Fetched session data:', sessionData);
         setSession(sessionData);
       } else {
         console.error('Failed to fetch session:', response.status);
@@ -52,21 +51,39 @@ const PaymentSuccessPage: React.FC = () => {
 
   useEffect(() => {
     // 支付成功后，标记购物车中的商品为已购买（只执行一次）
-    if (session && 
-        (session.payment_status === 'paid' || session.payment_status === 'complete') && 
-        !hasMarkedAsPurchasedRef.current) {
-      console.log('Payment confirmed as paid/complete, marking items as purchased');
-      hasMarkedAsPurchasedRef.current = true;
-      markAsPurchased();
-      // 延迟刷新购物车数据，确保状态更新
-      setTimeout(() => {
-        refreshCart();
-        console.log('Cart refreshed after payment success');
-      }, 100);
-    } else if (session) {
-      console.log('Session found but payment status is:', session.payment_status);
-    }
-  }, [session]); // 只依赖session，使用ref避免重新执行
+    const handlePaymentSuccess = async () => {
+      if (session && 
+          (session.payment_status === 'paid' || session.payment_status === 'complete') && 
+          !hasMarkedAsPurchasedRef.current) {
+        try {
+          console.log('Payment confirmed as paid/complete, marking items as purchased');
+          hasMarkedAsPurchasedRef.current = true;
+          
+          // 等待标记完成
+          await markAsPurchased();
+          
+          // 确保状态更新完成后再刷新购物车
+          setTimeout(() => {
+            refreshCart();
+            console.log('Cart refreshed after payment success');
+            
+            // 再次确认localStorage已更新
+            if (typeof window !== 'undefined') {
+              const updatedCart = localStorage.getItem('cartItems');
+              console.log('Final cart state in localStorage:', updatedCart);
+            }
+          }, 200);
+          
+        } catch (error) {
+          console.error('Error marking items as purchased:', error);
+        }
+      } else if (session) {
+        console.log('Session found but payment status is:', session.payment_status);
+      }
+    };
+
+    handlePaymentSuccess();
+  }, [session, markAsPurchased, refreshCart]);
 
   const formatAmount = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {

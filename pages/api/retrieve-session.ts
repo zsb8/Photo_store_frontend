@@ -1,7 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 
-const stripe = new Stripe('sk_test_Hrs6SAopgFPF0bZXSN3f6ELN', {
+// 确保在客户端加载Stripe
+// const stripe_secret_token = process.env.STRIPE_SECRET_KEY_TEST ?? "";
+const stripe_secret_token = process.env.STRIPE_SECRET_KEY_LIVE ?? "";
+
+const stripe = new Stripe(stripe_secret_token, {
   apiVersion: '2025-08-27.basil',
 });
 
