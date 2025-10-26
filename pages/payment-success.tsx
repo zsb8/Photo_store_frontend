@@ -4,6 +4,7 @@ import { CheckCircleOutlined, HomeOutlined, ShoppingOutlined } from '@ant-design
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useCart } from '../contexts/CartContext';
+import { useI18n } from "../contexts/I18nContext";
 
 const { Title, Text } = Typography;
 
@@ -26,6 +27,7 @@ const PaymentSuccessPage: React.FC = () => {
   const hasMarkedAsPurchasedRef = useRef(false);
   const { session_id } = router.query;
   const { markAsPurchased, refreshCart } = useCart();
+  const { t } = useI18n();
 
   const fetchSessionDetails = useCallback(async () => {
     try {
@@ -155,8 +157,8 @@ const PaymentSuccessPage: React.FC = () => {
           <Result
             status="success"
             icon={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-            title="支付成功！"
-            subTitle="您的支付已成功处理，商品已标记为已购买。"
+            title={t("Payment.success")}
+            subTitle={t("Payment.paymentSuccess")}
             extra={[
               <Button 
                 type="primary" 
@@ -166,7 +168,7 @@ const PaymentSuccessPage: React.FC = () => {
                 onClick={() => handleNavigation('/print-store', 'home')}
                 size="large"
               >
-                {navigating === 'home' ? '跳转中...' : '返回购买页面'}
+                {navigating === 'home' ? t("Common.processing") : t("Common.back")}
               </Button>,
               <Button 
                 key="payment"
@@ -175,34 +177,34 @@ const PaymentSuccessPage: React.FC = () => {
                 onClick={() => handleNavigation('/print-store', 'payment')}
                 size="large"
               >
-                {navigating === 'payment' ? '跳转中...' : '继续购买'}
+                {navigating === 'payment' ? t("Common.processing") : t("Cart.continueShopping")}
               </Button>
             ]}
           />
 
           {session && (
             <div style={{ marginTop: '24px' }}>
-              <Title level={4}>支付详情</Title>
+              <Title level={4}>{t("Payment.paymentDetails")}</Title>
               <Descriptions bordered column={1}>
-                <Descriptions.Item label="订单ID">
+                <Descriptions.Item label={t("Payment.transactionId")}>
                   <Text code>{session.id}</Text>
                 </Descriptions.Item>
-                <Descriptions.Item label="支付金额">
+                <Descriptions.Item label={t("Payment.amount")}>
                   <Text strong style={{ color: '#52c41a' }}>
                     {formatAmount(session.amount_total, session.currency)}
                   </Text>
                 </Descriptions.Item>
-                <Descriptions.Item label="支付状态">
+                <Descriptions.Item label={t("Payment.paymentStatus")}>
                   <Text type="success" strong>
-                    {session.payment_status === 'paid' ? '已支付' : session.payment_status}
+                    {session.payment_status === 'paid' ? t("Payment.paid") : session.payment_status}
                   </Text>
                 </Descriptions.Item>
                 {session.customer_details?.email && (
-                  <Descriptions.Item label="邮箱">
+                  <Descriptions.Item label={t("Common.email")}>
                     {session.customer_details.email}
                   </Descriptions.Item>
                 )}
-                <Descriptions.Item label="支付时间">
+                <Descriptions.Item label={t("Payment.paymentTime")}>
                   {formatDate(session.created)}
                 </Descriptions.Item>
               </Descriptions>
@@ -217,11 +219,11 @@ const PaymentSuccessPage: React.FC = () => {
             border: '1px solid #b7eb8f'
           }}>
             <Text type="success">
-              <strong>下一步：</strong> 您将收到一封确认邮件，包含支付详情和后续步骤。购物车中的商品已标记为已购买。
+              {t("Payment.nextStep")}
             </Text>
             <div style={{ marginTop: '8px' }}>
                           <Text type="secondary" style={{ fontSize: '12px' }}>
-              提示：点击&ldquo;返回图片&rdquo;将刷新页面并显示最新的购物车状态。
+              {t("Payment.prompt")}
             </Text>
             </div>
           </div>

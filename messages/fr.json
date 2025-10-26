@@ -259,7 +259,14 @@
     "description": "Description de l'article",
     "emailRequired": "Veuillez saisir l'adresse courriel",
     "emailInvalid": "Veuillez indiquer une adresse courriel valide",
-    "emailPlaceholder": "Pour confirmation de paiement"    
+    "emailPlaceholder": "Pour confirmation de paiement",
+    "paymentSuccess": "Votre paiement a été traité avec succès, l'objet a été marqué comme acheté.",
+    "nextStep": "Prochain Étape: Vous recevrez un email de confirmation contenant les détails du paiement et les étapes suivantes. Les articles dans votre panier ont été marqués comme achetés.",
+    "prompt": "Conseil: Cliquez sur &ldquo;Retour aux Photos&rdquo; pour rafraîchir la page et afficher le statut actuel du panier.",
+    "paymentDetails": "Détails du paiement",
+    "paymentStatus": "Statut du paiement",
+    "paymentTime": "Heure du paiement",
+    "paid": "Payé"
   },
   "PurchasePhoto": {
     "confirmPurchase": "Confirmer l'achat",

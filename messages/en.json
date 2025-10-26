@@ -260,7 +260,14 @@
     "description": "Item Description",
     "emailRequired": "Please enter email address",
     "emailInvalid": "Please enter a valid email address",
-    "emailPlaceholder": "For payment confirmation"
+    "emailPlaceholder": "For payment confirmation",
+    "paymentSuccess": "Your payment has been processed successfully, the item has been marked as purchased.",
+    "nextStep": "Next Step: You will receive an email confirmation containing payment details and subsequent steps. The items in your cart have been marked as purchased.",
+    "prompt": "Tip: Click &ldquo;Back to Photos&rdquo; to refresh the page and display the latest cart status.",
+    "paymentDetails": "Payment Details",
+    "paymentStatus": "Payment Status",
+    "paymentTime": "Payment Time",
+    "paid": "Paid"
   },
   "PurchasePhoto": {
     "confirmPurchase": "Confirm Purchase",

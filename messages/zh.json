@@ -259,7 +259,14 @@
     "description": "商品描述",
     "emailRequired": "请输入电子邮箱地址",
     "emailInvalid": "请输入有效的电子邮箱地址",
-    "emailPlaceholder": "用于接收支付确认"
+    "emailPlaceholder": "用于接收支付确认",
+    "paymentSuccess": "您的支付已成功处理，商品已标记为已购买。",
+    "nextStep": "下一步：您将收到一封确认邮件，包含支付详情和后续步骤。购物车中的商品已标记为已购买。",
+    "prompt": "提示：返回,将刷新页面并显示最新的购物车状态。",
+    "paymentDetails": "支付详情",
+    "paymentStatus": "支付状态",
+    "paymentTime": "支付时间",
+    "paid": "已支付"
   },
   "PurchasePhoto": {
     "confirmPurchase": "确认购买",
