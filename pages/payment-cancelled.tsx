@@ -3,15 +3,17 @@ import { Card, Button, Typography, Result } from 'antd';
 import { CloseCircleOutlined, HomeOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { useI18n } from '../contexts/I18nContext';
 
 const PaymentCancelledPage: React.FC = () => {
   const router = useRouter();
+  const { t } = useI18n();
 
   return (
     <>
       <Head>
-                 <title>支付取消 - Purchase Photo</title>
-        <meta name="description" content="支付已取消" />
+                 <title>{t("Payment.cancelled")}</title>
+        <meta name="description" content={t("Payment.cancelled")} />
       </Head>
       
       <div style={{ 
@@ -33,8 +35,8 @@ const PaymentCancelledPage: React.FC = () => {
           <Result
             status="error"
             icon={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
-            title="支付已取消"
-            subTitle="您的支付已被取消，如果您遇到任何问题，请联系我们的客服团队。"
+            title={t("Payment.cancelled")}
+            subTitle={t("Payment.yourPaymentHasBeenCancelled")}
             extra={[
               <Button 
                 type="primary" 
@@ -43,20 +45,20 @@ const PaymentCancelledPage: React.FC = () => {
                 onClick={() => router.push('/print-store')}
                 size="large"
               >
-                返回购买页面
+                {t("Common.back")}
               </Button>,
-              <Button 
-                key="payment"
-                icon={<ShoppingOutlined />}
-                onClick={() => router.push('/print-store')}
-                size="large"
-              >
-                重新购买
-              </Button>
+              // <Button 
+              //   key="payment"
+              //   icon={<ShoppingOutlined />}
+              //   onClick={() => router.push('/print-store')}
+              //   size="large"
+              // >
+              //   重新购买
+              // </Button>
             ]}
           />
 
-          <div style={{ 
+          {/* <div style={{ 
             marginTop: '24px', 
             padding: '16px', 
             background: '#fff2f0', 
@@ -66,7 +68,7 @@ const PaymentCancelledPage: React.FC = () => {
             <Typography.Text type="danger">
               <strong>需要帮助？</strong> 如果您在支付过程中遇到任何问题，请发送邮件至 support@reportdesigner.com 或致电 +1-800-123-4567
             </Typography.Text>
-          </div>
+          </div> */}
         </Card>
       </div>
     </>

@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { Button, Modal, Form, InputNumber, Select, Input, message } from 'antd';
 import { CreditCardOutlined, DollarOutlined } from '@ant-design/icons';
 import { loadStripe } from '@stripe/stripe-js';
+import { useI18n } from "../contexts/I18nContext";
 
 const { Option } = Select;
+
+// 这个页面其实就是你点击购买后，弹出的再次让你确认和输入电邮的页面。这个页面过完就是真的进入stripe支付页面了。
 
 // 确保在客户端加载Stripe
 // const stripe_public_token = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY_TEST ?? "";
@@ -32,12 +35,14 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   amount = 0.5,
   currency = 'cad',
   description = 'Purchase Photo服务',
-  buttonText = '立即支付',
+  buttonText: propButtonText,
   buttonType = 'primary',
   buttonSize = 'middle',
   onSuccess,
   onError
 }) => {
+  const { t } = useI18n();
+  const buttonText = propButtonText || t('Payment.paynow');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
@@ -123,7 +128,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
         title={
           <div style={{ textAlign: 'center' }}>
             <DollarOutlined style={{ color: '#1890ff', marginRight: '8px' }} />
-            安全支付
+            {t("Payment.securePayment")}
           </div>
         }
         open={isModalVisible}
@@ -144,9 +149,9 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
           }}
         >
           <Form.Item
-            label="支付金额"
+            label={t("Payment.amount")}
             name="amount"
-            rules={[{ required: true, message: '请输入支付金额' }]}
+            rules={[{ required: true, message: t("Payment.amountRequired") }]}
           >
                          <InputNumber
                style={{ width: '100%' }}
@@ -154,31 +159,27 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
                max={10000}
                step={0.01}
                precision={2}
-               placeholder="输入金额"
+               placeholder={t("Payment.amountRequired")}
                addonBefore={<DollarOutlined />}
              />
           </Form.Item>
-          <div style={{ marginTop: '-12px', marginBottom: '16px' }}>
-            <small style={{ color: '#666' }}>不低于1（货币单位）</small>
-          </div>
-
           <Form.Item
-            label="货币"
+            label={t("Payment.currency")}
             name="currency"
             rules={[{ required: true, message: '请选择货币' }]}
           >
                          <Select>
-               <Option value="usd">USD - 美元</Option>
-               <Option value="cad">CAD - 加元</Option>
-               <Option value="eur">EUR - 欧元</Option>
-               <Option value="gbp">GBP - 英镑</Option>
-               <Option value="jpy">JPY - 日元</Option>
-               <Option value="cny">CNY - 人民币</Option>
+               <Option value="usd">USD {t("Payment.currencyUSD")}</Option>
+               <Option value="cad">CAD {t("Payment.currencyCAD")}</Option>
+               <Option value="eur">EUR {t("Payment.currencyEUR")}</Option>
+               <Option value="gbp">GBP {t("Payment.currencyGBP")}</Option>
+               <Option value="jpy">JPY {t("Payment.currencyJPY")}</Option>
+               <Option value="cny">CNY {t("Payment.currencyCNY")}</Option>
              </Select>
           </Form.Item>
 
           <Form.Item
-            label="商品描述"
+            label={t("Payment.description")}
             name="description"
             rules={[{ required: true, message: '请输入商品描述' }]}
           >
@@ -186,14 +187,14 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
           </Form.Item>
 
           <Form.Item
-            label="邮箱地址"
+            label={t("Common.email")}
             name="email"
             rules={[
-              { required: true, message: '请输入邮箱地址' },
-              { type: 'email', message: '请输入有效的邮箱地址' }
+              { required: true, message: t("Payment.emailRequired") },
+              { type: 'email', message: t("Payment.emailInvalid") }
             ]}
           >
-            <Input placeholder="用于接收支付确认" />
+            <Input placeholder={t("Payment.emailPlaceholder")} />
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0, textAlign: 'center' }}>
@@ -205,13 +206,13 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
               size="large"
               style={{ width: '100%', height: '48px' }}
             >
-              {loading ? '处理中...' : '立即支付'}
+              {loading ? t("Common.processing") : t('Payment.paynow')}
             </Button>
           </Form.Item>
 
           <div style={{ textAlign: 'center', marginTop: '16px' }}>
             <small style={{ color: '#666' }}>
-              <CreditCardOutlined /> 支付由Stripe安全处理
+              <CreditCardOutlined /> {t('Payment.stripeSecurePayment')}
             </small>
           </div>
         </Form>

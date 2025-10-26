@@ -4,6 +4,7 @@ import { CreditCardOutlined, DollarOutlined, ShoppingCartOutlined } from '@ant-d
 import { loadStripe } from '@stripe/stripe-js';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { useI18n } from "../contexts/I18nContext";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -25,6 +26,7 @@ const PaymentPage: React.FC = () => {
   const [cartTotal, setCartTotal] = useState<number>(0);
   const [form] = Form.useForm();
   const router = useRouter();
+  const { t } = useI18n();
 
   // 从localStorage读取购物车总金额
   useEffect(() => {
@@ -100,8 +102,8 @@ const PaymentPage: React.FC = () => {
   return (
     <>
       <Head>
-                 <title>支付页面 - Purchase Photo</title>
-        <meta name="description" content="安全支付页面" />
+        <title>{t('Payment.securePayment')} - Purchase Photo</title>
+        <meta name="description" content={t('Payment.securePayment')} />
       </Head>
       
       <div style={{ 
@@ -122,13 +124,13 @@ const PaymentPage: React.FC = () => {
         >
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <Title level={2} style={{ color: '#1890ff', marginBottom: '8px' }}>
-              <DollarOutlined /> 安全支付
+              <DollarOutlined /> {t('Payment.securePayment')}
             </Title>
-            <Text type="secondary">使用Stripe安全支付系统</Text>
+            <Text type="secondary">{t('Payment.stripeSecurePayment')}</Text>
             {cartTotal > 0 && (
               <div style={{ marginTop: '8px' }}>
                 <Text strong style={{ color: '#52c41a' }}>
-                  购物车总金额: CAD ${cartTotal.toFixed(2)}
+                  {t('Payment.cartTotal')}: CAD ${cartTotal.toFixed(2)}
                 </Text>
               </div>
             )}
@@ -146,38 +148,38 @@ const PaymentPage: React.FC = () => {
              }}
           >
             <Form.Item
-              label="支付金额"
+              label={t('Payment.amount')}
               name="amount"
               rules={[
-                { required: true, message: '请输入支付金额' },
+                { required: true, message: t('Payment.amountRequired') },
                 { 
                   type: 'number', 
                   min: 0.01, 
-                  message: '金额必须大于0' 
+                  message: t('Payment.amountMin')
                 },
                 {
                   validator: (_, value) => {
                     if (value && (value > 10000 || value < 0.01)) {
-                      return Promise.reject(new Error('金额必须在0.01到10000之间'));
+                      return Promise.reject(new Error(t('Payment.amountRange')));
                     }
                     return Promise.resolve();
                   }
                 }
               ]}
             >
-                             <InputNumber
-                 style={{ width: '100%' }}
-                 min={0.01}
-                 max={10000}
-                 step={0.01}
-                 precision={2}
-                 placeholder="输入金额"
-                 addonBefore={<DollarOutlined />}
-               />
+              <InputNumber
+                style={{ width: '100%' }}
+                min={0.01}
+                max={10000}
+                step={0.01}
+                precision={2}
+                placeholder={t('Payment.amount')}
+                addonBefore={<DollarOutlined />}
+              />
             </Form.Item>
 
             <div style={{ marginBottom: '16px' }}>
-              <Text strong>快速选择金额:</Text>
+              <Text strong>{t('Payment.quickAmounts')}</Text>
               <Space wrap style={{ marginTop: '8px' }}>
                 {presetAmounts.map(amount => (
                   <Button
@@ -193,37 +195,37 @@ const PaymentPage: React.FC = () => {
             </div>
 
             <Form.Item
-              label="货币"
+              label={t('Payment.currency')}
               name="currency"
-              rules={[{ required: true, message: '请选择货币' }]}
+              rules={[{ required: true, message: t('Payment.currencyRequired') }]}
             >
-                             <Select>
-                 <Option value="usd">USD - 美元</Option>
-                 <Option value="cad">CAD - 加元</Option>
-                 <Option value="eur">EUR - 欧元</Option>
-                 <Option value="gbp">GBP - 英镑</Option>
-                 <Option value="jpy">JPY - 日元</Option>
-                 <Option value="cny">CNY - 人民币</Option>
-               </Select>
+              <Select>
+                <Option value="usd">USD - {t('Common.currency.usd')}</Option>
+                <Option value="cad">CAD - {t('Common.currency.cad')}</Option>
+                <Option value="eur">EUR - {t('Common.currency.eur')}</Option>
+                <Option value="gbp">GBP - {t('Common.currency.gbp')}</Option>
+                <Option value="jpy">JPY - {t('Common.currency.jpy')}</Option>
+                <Option value="cny">CNY - {t('Common.currency.cny')}</Option>
+              </Select>
             </Form.Item>
 
             <Form.Item
-              label="商品描述"
+              label={t('Payment.description')}
               name="description"
-              rules={[{ required: true, message: '请输入商品描述' }]}
+              rules={[{ required: true, message: t('Payment.descriptionRequired') }]}
             >
-              <Input placeholder="请输入商品或服务描述" />
+              <Input placeholder={t('Payment.descriptionPlaceholder')} />
             </Form.Item>
 
             <Form.Item
-              label="电子邮箱地址"
+              label={t('Common.email')}
               name="email"
               rules={[
-                { required: true, message: '请输入电子邮箱地址' },
-                { type: 'email', message: '请输入有效的电子邮箱地址' }
+                { required: true, message: t('Payment.emailRequired') },
+                { type: 'email', message: t('Payment.emailInvalid') }
               ]}
             >
-              <Input placeholder="用于接收支付确认" />
+              <Input placeholder={t('Payment.emailPlaceholder')} />
             </Form.Item>
 
             <Divider />
@@ -237,13 +239,13 @@ const PaymentPage: React.FC = () => {
                 size="large"
                 style={{ width: '100%', height: '48px' }}
               >
-                {loading ? '处理中...' : '立即支付'}
+                {loading ? t('Common.processing') : t('Payment.payNow')}
               </Button>
             </Form.Item>
 
             <div style={{ textAlign: 'center' }}>
               <Text type="secondary" style={{ fontSize: '12px' }}>
-                <CreditCardOutlined /> 支付由Stripe安全处理
+                <CreditCardOutlined /> {t('Payment.stripeSecurePayment')}
               </Text>
             </div>
           </Form>
@@ -256,7 +258,7 @@ const PaymentPage: React.FC = () => {
               onClick={() => router.push('/home')}
               icon={<ShoppingCartOutlined />}
             >
-              返回主页
+              {t("Common.back")}
             </Button>
           </div>
         </Card>

@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { getPresignedUrlFromStorage } from '../util/aws-api';
+import { useI18n } from '../contexts/I18nContext';
 
 interface PhotoImageProps {
   photoId: string;
@@ -31,6 +32,7 @@ const PhotoImage: React.FC<PhotoImageProps> = ({
 }) => {
   // 从本地存储获取预授权链接
   const presignedUrl = getPresignedUrlFromStorage(photoId);
+  const { t } = useI18n();
   
   // 添加调试日志
   console.log('PhotoImage Debug:', {
@@ -58,7 +60,7 @@ const PhotoImage: React.FC<PhotoImageProps> = ({
         borderRadius: '4px',
         ...style
       }}>
-        图片加载中
+        {t("Common.loading")}
       </div>
     );
   }

@@ -34,7 +34,9 @@
     "paste": "Paste",
     "cut": "Cut",
     "undo": "Undo",
-    "redo": "Redo"
+    "redo": "Redo",
+    "email": "Email",
+    "processing": "Processing..."
   },
   "Navigation": {
     "home": "Home",
@@ -137,7 +139,8 @@
       "creative": "Creative",
       "portrait": "Portrait",
       "emotion": "Emotion",
-      "other": "Other"
+      "other": "Other",
+      "confirmPayment": "Confirm Payment"
     }
   },
   "PrintStore": {
@@ -230,14 +233,41 @@
     "shippingAddress": "Shipping Address",
     "sameAsBilling": "Same as Billing Address",
     "placeOrder": "Place Order",
-    "processing": "Processing...",
     "success": "Payment Successful",
     "failed": "Payment Failed",
     "cancelled": "Payment Cancelled",
+    "yourPaymentHasBeenCancelled": "Your payment has been cancelled. If you have any questions, please contact our customer service team.",
     "refund": "Refund",
     "receipt": "Receipt",
     "orderNumber": "Order Number",
-    "transactionId": "Transaction ID"
+    "transactionId": "Transaction ID",
+    "paynow":"Pay Now",
+    "securePayment": "Secure Payment",
+    "stripeSecurePayment": "Secure payment with Stripe",
+    "cartTotal": "Cart Total",
+    "amount": "Payment Amount",
+    "amountRequired": "Please enter payment amount",
+    "amountMin": "Amount must be greater than 0",
+    "amountRange": "Amount must be between 0.01 and 10000",
+    "quickAmounts": "Quick Select Amounts:",
+    "currency": "Currency",
+    "currencyUSD": "",   
+    "currencyCAD": "", 
+    "currencyEUR": "", 
+    "currencyGBP": "", 
+    "currencyJPY": "", 
+    "currencyCNY": "", 
+    "description": "Item Description",
+    "emailRequired": "Please enter email address",
+    "emailInvalid": "Please enter a valid email address",
+    "emailPlaceholder": "For payment confirmation"
+  },
+  "PurchasePhoto": {
+    "confirmPurchase": "Confirm Purchase",
+    "shoppingCartItems": "Shopping Cart Items",
+    "item": "Item",
+    "confirmPayment": "Confirm Payment",
+    "addedToCart": "Added to Cart"
   },
   "About": {
     "title": "About Us",
@@ -333,12 +363,10 @@
     "deleting": "Deleting...",
     "uploading": "Uploading...",
     "downloading": "Downloading...",
-    "processing": "Processing...",
     "completed": "Completed",
     "failed": "Failed",
     "cancelled": "Cancelled",
-    "retry": "Retry",
-    "refresh": "Refresh",
-    "reload": "Reload"
+    "retry": "Retry"
   }
 }
+

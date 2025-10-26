@@ -242,6 +242,26 @@ const PhotoDetailPage = () => {
   const selectedSizeData = availableSizeOptions.find(s => s.size === selectedSize);
   const currentPrice = selectedSizeData?.price || 0;
 
+  // 生成新的ID很麻烦，要先处理一遍EXIF信息然后再附加上序号
+  const getPhotoNewId = (photoInfo:any): string => {
+    let dateStr = '';
+    if (photoInfo?.exifInfo) {
+      try {
+        const exifData: ImageExifInfo = parseExifInfoFromJson(photoInfo.exifInfo);
+        if (exifData.dateTaken) {
+          dateStr = `${formatExifDate(exifData.dateTaken)} `;
+        }
+      } catch {
+        dateStr = '';
+      }
+    }
+    const mystr =  `${dateStr}- ${photoInfo.filename_id || photoInfo.id || ''}`
+    const reuslt = mystr.replace(/\s+/g, '');
+    return reuslt;
+  };
+
+
+
   const handleAddToCart = () => {
     // 校验联系方式
     const { name, phone, address } = contactInfo;
@@ -252,12 +272,14 @@ const PhotoDetailPage = () => {
     }
     if (photoInfo && selectedSizeData) {
       const cartItemId = `${photoInfo.id}-${selectedSize}`;
+      const photoNewId = getPhotoNewId(photoInfo);
       addToCart({
         id: cartItemId,
         src: photoInfo.s3_newsize_path, // 使用S3路径作为图片源
         alt: `${photoInfo.title || photoInfo.filename} (${selectedSizeData.label})`,
         price: selectedSizeData.price,
-        description: `${photoInfo.description || photoInfo.title} - ${selectedSizeData.label}`
+        description: `${photoInfo.description || photoInfo.title} - ${selectedSizeData.label}`,
+        photoNewId: photoNewId
       });
       // 存储一次联系方式，供后续购买页或后台使用
       try { localStorage.setItem('contact_info', JSON.stringify(contactInfo)); } catch {}
@@ -377,18 +399,18 @@ const PhotoDetailPage = () => {
                   
                   {/* 图片信息 */}
                   <div style={{ marginTop: '16px', fontSize: '12px', color: '#666' }}>
-                    <div>{t("PhotoDetail.photoInfo.photoId")} {photoInfo.exifInfo ? (() => { try { const exifData: ImageExifInfo = parseExifInfoFromJson(photoInfo.exifInfo); return exifData.dateTaken ? `${formatExifDate(exifData.dateTaken)} ` : ''; } catch { return ''; } })() : ''}- {photoInfo.filename_id || photoInfo.id}</div>
+                    <div>{t("PhotoDetail.photoInfo.photoId")} {getPhotoNewId(photoInfo)}</div>
                     {/* <div>上传时间: {new Date(photoInfo.upload_datetime).toLocaleString()}</div>
                     <div>设置时间: {new Date(photoInfo.setting_datetime).toLocaleString()}</div> */}
                     {photoInfo.size && (
                       <div>{t("PhotoDetail.photoInfo.size")} {photoInfo.size}</div>
                     )}
-                    {photoInfo.type && (
+                    {/* {photoInfo.type && (
                       <div>{t("PhotoDetail.photoInfo.topic")} {photoInfo.topic}</div>
                     )}
                     {photoInfo.type && (
                       <div>{t("PhotoDetail.photoInfo.type")} {photoInfo.type}</div>
-                    )}
+                    )} */}
                     {photoInfo.place && (
                       <div>{t("PhotoDetail.photoInfo.place")} {photoInfo.place}</div>
                     )}
@@ -477,7 +499,7 @@ const PhotoDetailPage = () => {
                                 fontWeight: 'bold',
                                 lineHeight: '1.2'
                               }}>
-                                CAD ${sizeOption.price}
+                                &nbsp; ${sizeOption.price}
                               </Text>
                             </Card>
                           </Col>

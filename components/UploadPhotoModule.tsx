@@ -94,14 +94,6 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
           )}
         </Form.Item>
 
-        {/* <Form.Item
-          name="alt"
-          label="图片标题"
-          rules={[{ required: true, message: '请输入图片标题' }]}
-        >
-          <Input placeholder="请输入图片标题" />
-        </Form.Item> */}
-
         <Form.Item
           name="description"
           label="图片描述"
@@ -166,9 +158,9 @@ const UploadPhotoModule: React.FC<UploadPhotoModuleProps> = ({
             <Space wrap>
               <Form.Item name="metaSize" label="尺寸">
                 <Select style={{ width: 200 }} placeholder="请选择尺寸">
-                  <Select.Option value="6*8英寸，152*203毫米">小（6*8英寸，152*203毫米）</Select.Option>
-                  <Select.Option value="8*12英寸，203*305毫米">中（8*12英寸，203*305毫米）</Select.Option>
-                  <Select.Option value="12*18英寸，305*457毫米">大（12*18英寸，305*457毫米）</Select.Option>
+                  <Select.Option value="6*8Inch，152*203mm">小（6*8英寸，152*203毫米）</Select.Option>
+                  <Select.Option value="8*12Inch，203*305mm">中（8*12英寸，203*305毫米）</Select.Option>
+                  <Select.Option value="12*18Inch，305*457mm">大（12*18英寸，305*457毫米）</Select.Option>
                   <Select.Option value="Special">特殊（X*Y英寸，M*N毫米）</Select.Option>
                 </Select>
               </Form.Item>

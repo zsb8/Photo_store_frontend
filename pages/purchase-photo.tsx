@@ -9,49 +9,19 @@ import { useCart } from '../contexts/CartContext';
 import PhotoImage from '../components/PhotoImage';
 import { get_photos_presigned_url } from '../util/aws-api';
 import styles from '../styles/home.module.css';
+import { useI18n } from '../contexts/I18nContext';
+import {formatFileNameWithSize} from '../util/photo-util';
 
 const { Title, Text } = Typography;
 
 const PurchasePhotoPage: React.FC = () => {
   const router = useRouter();
   const { markAsPurchased, cartItems: contextCart } = useCart();
+  const { t } = useI18n();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartTotal, setCartTotal] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [thumbRefreshCounter, setThumbRefreshCounter] = useState(0);
-
-  // 辅助函数：提取并格式化文件名和尺寸
-  const formatFileNameWithSize = (item: CartItem) => {
-    const idStr = String(item.id);
-    if (idStr.includes('-')) {
-      const [photoId, size] = idStr.split('-');
-      // 从alt字段中提取文件名，如果没有alt则使用photoId
-      let fileName = item.alt || photoId;
-      
-      // 如果alt包含文件名和尺寸信息，提取文件名部分
-      if (fileName.includes('(') && fileName.includes(')')) {
-        fileName = fileName.split('(')[0].trim();
-      }
-      
-      // 如果文件名包含路径，只取文件名部分
-      if (fileName.includes('/')) {
-        fileName = fileName.split('/').pop() || fileName;
-      }
-      
-      // 如果文件名包含扩展名，去掉扩展名
-      if (fileName.includes('.')) {
-        fileName = fileName.split('.')[0];
-      }
-      
-      // 取前7个字符，如果不足7个字符则全部显示
-      const shortFileName = fileName.length > 7 ? fileName.substring(0, 7) + '...' : fileName;
-      
-      // 添加尺寸标签
-      const sizeLabel = size === 'small' ? '小' : size === 'medium' ? '中' : '大';
-      return `${shortFileName} (${sizeLabel})`;
-    }
-    return item.alt || `图片 ${item.id}`;
-  };
 
   useEffect(() => {
     // 使用上下文中的购物车 + 本地选择的ID
@@ -142,7 +112,7 @@ const PurchasePhotoPage: React.FC = () => {
         alignItems: 'center',
         background: '#f0f2f5'
       }}>
-        <div>加载中...</div>
+        <div>{t("Common.loading")}...</div>
       </div>
     );
   }
@@ -162,7 +132,7 @@ const PurchasePhotoPage: React.FC = () => {
           subTitle="请先选择要购买的图片"
           extra={
             <Button type="primary" onClick={handleBackToHome}>
-              返回购买页面
+              {t("Common.back")}
             </Button>
           }
         />
@@ -191,14 +161,14 @@ const PurchasePhotoPage: React.FC = () => {
             gap: '16px'
           }}>
             <Title level={1} style={{ margin: 0, fontSize: 'clamp(24px, 5vw, 32px)' }}>
-              确认购买
+              {t("PurchasePhoto.confirmPurchase")}
             </Title>
             <Button 
               icon={<HomeOutlined />} 
               onClick={handleBackToHome}
               size="middle"
             >
-              返回购买页面
+              {t("Common.back")}
             </Button>
           </div>
 
@@ -210,7 +180,7 @@ const PurchasePhotoPage: React.FC = () => {
             <div style={{ marginBottom: '24px' }}>
               <Title level={2}>
                 <ShoppingCartOutlined style={{ marginRight: '8px' }} />
-                购物车商品 ({cartItems.length} 件)
+                {t("PurchasePhoto.shoppingCartItems")} ({cartItems.length} {t("PurchasePhoto.item")})
               </Title>
             </div>
 
@@ -243,10 +213,9 @@ const PurchasePhotoPage: React.FC = () => {
                       <Title level={4} style={{ margin: 0, marginBottom: '8px' }}>
                         {formatFileNameWithSize(item)}
                       </Title>
-                      {/* 描述文字已按要求隐藏 */}
                       <div style={{ marginTop: '8px' }}>
                         <Text type="secondary" style={{ fontSize: '12px', color: '#52c41a' }}>
-                          ✓ 已添加到购物车
+                          ✓ {t("PurchasePhoto.addedToCart")}
                         </Text>
                       </div>
                     </div>
@@ -269,7 +238,7 @@ const PurchasePhotoPage: React.FC = () => {
             {/* 总计和支付 */}
             <div style={{ textAlign: 'center' }}>
               <div style={{ marginBottom: '24px' }}>
-                <Text strong style={{ fontSize: '20px' }}>总计: </Text>
+                <Text strong style={{ fontSize: '20px' }}>{t("Cart.total")}: </Text>
                 <Text style={{ fontSize: '28px', color: '#1890ff', fontWeight: 'bold' }}>
                   {formatPrice(cartTotal)}
                 </Text>
@@ -278,10 +247,10 @@ const PurchasePhotoPage: React.FC = () => {
               <PaymentButton
                 amount={cartTotal}
                 currency="cad"
-                description={`购买 ${cartItems.length} 张图片 - ${cartItems.map(item => {
+                description={`${t("Navigation.purchase")} ${cartItems.length} ${t("Navigation.photos")} - ${cartItems.map(item => {
                   return formatFileNameWithSize(item);
                 }).join(', ')}`}
-                buttonText={`确认支付 ${formatPrice(cartTotal)}`}
+                buttonText={`${t('PurchasePhoto.confirmPayment')} ${formatPrice(cartTotal)}`}
                 buttonType="primary"
                 buttonSize="large"
                 onSuccess={handlePaymentSuccess}

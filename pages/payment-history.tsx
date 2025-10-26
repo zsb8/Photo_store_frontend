@@ -4,6 +4,7 @@ import { SearchOutlined, ReloadOutlined, EyeOutlined, DownloadOutlined, HomeOutl
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { RouteGuard } from '../components/route-guard';
+import { useI18n } from "../contexts/I18nContext";
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -20,6 +21,7 @@ interface PaymentRecord {
 }
 
 const PaymentHistoryPage: React.FC = () => {
+  const { t } = useI18n();
   const router = useRouter();
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -99,7 +101,7 @@ const PaymentHistoryPage: React.FC = () => {
   const getStatusTag = (status: string) => {
     const statusConfig = {
       paid: { color: 'success', text: '已支付' },
-      pending: { color: 'processing', text: '处理中' },
+      pending: { color: 'processing', text: t("Common.processing") },
       failed: { color: 'error', text: '失败' },
       cancelled: { color: 'default', text: '已取消' }
     };

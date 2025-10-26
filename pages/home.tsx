@@ -139,7 +139,7 @@ export default function ReportDesigner() {
                     console.log('Payment session created:', sessionId);
                     console.log('Payment amount used:', unpurchasedTotal > 0 ? unpurchasedTotal : 0.50);
                     // 只记录会话创建，不标记为已购买
-                    message.success(t("Payment.processing"));
+                    message.success(t("Common.processing"));
                   }}
                   onError={(error) => {
                     console.error('Payment error:', error);

@@ -4,6 +4,7 @@ import { ShoppingCartOutlined, DeleteOutlined, CreditCardOutlined } from '@ant-d
 import { useRouter } from 'next/router';
 import PhotoImage from './PhotoImage';
 import { useI18n } from '../contexts/I18nContext';
+import {formatFileNameWithSize} from '../util/photo-util';
 
 const { Title, Text } = Typography;
 
@@ -14,6 +15,7 @@ export interface CartItem {
   price: number;
   description: string;
   purchased?: boolean;
+  photoNewId?: string;
 }
 
 interface ShoppingCartProps {
@@ -40,40 +42,6 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  // 辅助函数：提取并格式化文件名和尺寸
-  const formatFileNameWithSize = (item: CartItem) => {
-    const idStr = String(item.id);
-    if (idStr.includes('-')) {
-      const [photoId, size] = idStr.split('-');
-      // 从alt字段中提取文件名，如果没有alt则使用photoId
-      let fileName = item.alt || photoId;
-      
-      // 如果alt包含文件名和尺寸信息，提取文件名部分
-      if (fileName.includes('(') && fileName.includes(')')) {
-        fileName = fileName.split('(')[0].trim();
-      }
-      
-      // 如果文件名包含路径，只取文件名部分
-      if (fileName.includes('/')) {
-        fileName = fileName.split('/').pop() || fileName;
-      }
-      
-      // 如果文件名包含扩展名，去掉扩展名
-      if (fileName.includes('.')) {
-        fileName = fileName.split('.')[0];
-      }
-      
-      // 取前7个字符，如果不足7个字符则全部显示
-      const shortFileName = fileName.length > 7 ? fileName.substring(0, 7) + '...' : fileName;
-      
-      // 添加尺寸标签
-      const sizeLabel = size === 'small' ? t("Photos.size") : size === 'medium' ? t("Photos.size") : t("Photos.size");
-      return `${shortFileName} (${sizeLabel})`;
-    }
-    return item.alt || `${t("Photos.title")} ${item.id}`;
-  };
-
   const totalAmount = items.reduce((sum, item) => sum + item.price, 0);
   const unpurchasedItems = items.filter(item => !item.purchased);
   const purchasedItems = items.filter(item => item.purchased);
@@ -270,9 +238,9 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ items, onRemoveItem, onClea
                         </Text>
                       )}
                     </div>
-                    <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>
+                    {/* <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>
                       {item.description.substring(0, 30)}...
-                    </Text>
+                    </Text> */}
                     <Text strong style={{ color: item.purchased ? '#52c41a' : '#1890ff', fontSize: '14px' }}>
                       {formatPrice(item.price)}
                     </Text>

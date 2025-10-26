@@ -968,13 +968,14 @@ const PhotosBackendManagement: React.FC = () => {
             layout="vertical"
             onFinish={handleEditSave}
           >
-            <Form.Item
+            {/* <Form.Item
               name="alt"
               label="图片标题"
               rules={[{ required: true, message: '请输入图片标题' }]}
             >
               <Input placeholder="请输入图片标题" />
-            </Form.Item>
+            </Form.Item> */}
+            <div>图片ID: {editingPhoto?.id}</div>
 
             <Form.Item
               name="description"

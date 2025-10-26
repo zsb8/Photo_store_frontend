@@ -9,6 +9,7 @@ import ShoppingCart from "../components/ShoppingCart";
 import styles from "../styles/home.module.css";
 import { get_photos_presigned_url, get_all_photo_settings } from "../util/aws-api";
 import { useI18n } from "../contexts/I18nContext";
+import { parseExifInfoFromJson, ImageExifInfo } from "../util/image-exif-utils";
 
 const { Title, Text } = Typography;
 
@@ -21,6 +22,8 @@ interface PhotoItem {
   expires_in: number;
   title?: string;
   filename_id?: string;
+  dateTaken?: string;
+  photoNewId?: string;
 }
 
 const PrintStorePage = () => {
@@ -29,6 +32,25 @@ const PrintStorePage = () => {
   const { cartItems, removeFromCart, clearCart } = useCart();
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+
+  // 生成新的ID很麻烦，要先处理一遍EXIF信息然后再附加上序号
+  const getPhotoNewId = (photoInfo:any): string => {
+    let dateStr = '';
+    if (photoInfo?.exifInfo) {
+      try {
+        const exifData: ImageExifInfo = parseExifInfoFromJson(photoInfo.exifInfo);
+        if (exifData.dateTaken) {
+          dateStr = `${formatExifDate(exifData.dateTaken)} `;
+        }
+      } catch {
+        dateStr = '';
+      }
+    }
+    const mystr =  `${dateStr}- ${photoInfo.filename_id || photoInfo.id || ''}`
+    const reuslt = mystr.replace(/\s+/g, '');
+    return reuslt;
+  };
 
   useEffect(() => {
     const fetchPhotos = async () => {
@@ -47,6 +69,7 @@ const PrintStorePage = () => {
           }
           
           const convertedPhotos: PhotoItem[] = photoSettingsResponse.data.map((item: any, index: number) => {
+            const photoNewId = getPhotoNewId(item);
             const converted = {
               id: item.id || `photo_${index}`,
               filename: item.filename || `Photo ${index + 1}`,
@@ -56,6 +79,7 @@ const PrintStorePage = () => {
               expires_in: 3600,
               title: item.title || item.filename || `Photo ${index + 1}`,
               filename_id: item.filename_id,
+              photoNewId: photoNewId,
             };
             return converted;
           });
@@ -76,6 +100,17 @@ const PrintStorePage = () => {
 
   const handlePhotoClick = (photoId: string) => {
     router.push(`/photo/${photoId}`);
+  };
+
+  // 格式化 EXIF 拍摄日期为 YYYY.MM.DD（例如 2024-01-18T08-51-59 -> 2024.01.18）
+  const formatExifDate = (dateStr: string): string => {
+    try {
+      const datePart = (dateStr || '').split('T')[0];
+      if (!datePart) return dateStr;
+      return datePart.replace(/-/g, '.');
+    } catch {
+      return dateStr;
+    }
   };
 
   return (
@@ -155,8 +190,7 @@ const PrintStorePage = () => {
                             style={{ border: "2px solid #f0f0f0", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", marginBottom: "16px", position: "relative", overflow: "hidden" }}
                             className={styles.photoCard}
                           >
-                            <Card.Meta title={(photo.filename_id || photo.id)} description="" />
-                          </Card>
+                              <Card.Meta title={`${photo.photoNewId}`} description="" /></Card>
                           {index < photos.length - 1 && (
                             <div className={styles.mobileDivider} style={{ display: "none", height: "3px", background: "linear-gradient(90deg, #f0f0f0, #1890ff, #f0f0f0)", margin: "24px 0", borderRadius: "2px", position: "relative", boxShadow: "0 2px 4px rgba(24, 144, 255, 0.3)" }}>
                               <div style={{ position: "absolute", top: "-10px", left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #1890ff, #40a9ff)", color: "white", padding: "6px 16px", borderRadius: "16px", fontSize: "12px", fontWeight: "bold", whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(24, 144, 255, 0.4)", border: "2px solid white" }}>
