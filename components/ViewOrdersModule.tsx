@@ -51,7 +51,12 @@ const ViewOrdersModule: React.FC<ViewOrdersModuleProps> = ({
       title: '订单ID',
       dataIndex: 'id',
       key: 'id',
-      render: (id: string) => <Text code>{id}</Text>,
+      render: (id: string) => {
+        const display = typeof id === 'string' && id.length > 25
+          ? `${id.slice(0, 15)}...${id.slice(-10)}`
+          : id;
+        return <Text code title={id}>{display}</Text>;
+      },
     },
     {
       title: '金额',
