@@ -1,9 +1,10 @@
 import Head from "next/head";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
 import { Carousel, Spin, Typography } from "antd";
 import styles from "../styles/home.module.css";
-import { get_photos_presigned_url } from "../util/aws-api";
+import { get_all_photo_settings, get_photos_presigned_url } from "../util/aws-api";
 import { useI18n } from "../contexts/I18nContext";
 
 interface SlidePhoto {
@@ -16,6 +17,8 @@ const SlideshowHome: React.FC = () => {
   const { t } = useI18n();
   const [photos, setPhotos] = useState<SlidePhoto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [idToTypeMap, setIdToTypeMap] = useState<Record<string, string>>({});
+  const router = useRouter();
 
   useEffect(() => {
     const load = async () => {
@@ -32,6 +35,20 @@ const SlideshowHome: React.FC = () => {
             .slice(0, 5)
             .map((p: any) => ({ id: p.id, presigned_url: p.presigned_url, filename: p.filename || "" }));
           setPhotos(list);
+          // 同步获取这些图片的类型映射
+          try {
+            const settings = await get_all_photo_settings();
+            const typeMap: Record<string, string> = {};
+            (settings.data || []).forEach((s: any) => {
+              if (s && s.id) {
+                const key = s.type && typeof s.type === "string" && s.type.trim().length > 0 ? s.type : "other";
+                typeMap[s.id] = key;
+              }
+            });
+            setIdToTypeMap(typeMap);
+          } catch {
+            setIdToTypeMap({});
+          }
         } else {
           setPhotos([]);
         }
@@ -144,7 +161,15 @@ const SlideshowHome: React.FC = () => {
             style={{ height: "calc(100vh - 64px)" }}
           >
             {photos.slice(0, 5).map((p, idx) => (
-              <div key={p.id} className={styles.fullHeightSlide}>
+              <div
+                key={p.id}
+                className={styles.fullHeightSlide}
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  const typeKey = idToTypeMap[p.id] || "other";
+                  router.push(`/photo/type/${encodeURIComponent(typeKey)}`);
+                }}
+              >
                 <Image
                   src={p.presigned_url}
                   alt={p.filename}
